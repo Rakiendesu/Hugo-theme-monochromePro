@@ -65,47 +65,6 @@
 
 </div>
 
-<style>
-.feature-grid {
-  max-width: 100%;
-}
-
-.feature-grid h3 {
-  margin: 24px 0 12px 0;
-  padding-bottom: 6px;
-  border-bottom: 2px solid #eaecef;
-}
-
-.screenshots {
-  margin: 12px 0;
-}
-
-.screenshots-row {
-  display: flex;
-  gap: 16px;
-  margin: 12px 0;
-  flex-wrap: wrap;
-}
-
-.screenshots-row img {
-  border-radius: 8px;
-  border: 1px solid #e1e4e8;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.screenshots-row img:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-
-.feature-grid > p > img {
-  border-radius: 8px;
-  border: 1px solid #e1e4e8;
-  margin: 12px 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-</style>
 ## 必备!!
 
 先每个链接打开试试. 如果能进GitHub, 那<基础功能>和<动态功能>是能搞定的, <评论功能>的MangoDB如果打不开, 或者不会配置就算了.
