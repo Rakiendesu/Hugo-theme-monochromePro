@@ -1,0 +1,222 @@
+{{ $limit := .Get "limit" | default 5 }}
+{{ $status_url := .Site.Params.status.status_api_url }}
+{{ $interval := .Get "time" | default 3500 }}
+
+<style>
+/* ==========================================================================
+   动态状态轮播条（自动适配主题色）
+   ========================================================================== */
+.status-ticker-wrapper {
+    height: 40px; 
+    overflow: hidden;
+    position: relative;
+    background: var(--color-background-card, #fcfcfc);
+    border: 1px solid var(--color-border, #eee);
+    border-radius: 8px;
+    padding: 0 12px;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: border-color 0.3s, background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 悬浮状态：边框变为主调色，同时融入 4% 的极其微弱主题色背景提升质感 */
+.status-ticker-wrapper:hover { 
+    border-color: var(--color-accent); 
+    background-color: color-mix(in srgb, var(--color-accent) 4%, var(--color-background-card, #fcfcfc));
+}
+
+.status-ticker-list {
+    margin: 0 !important; padding: 0 !important;
+    list-style: none !important; width: 100%; display: block !important;
+}
+
+.status-ticker-item {
+    height: 40px !important;
+    display: flex !important; align-items: center !important; 
+    justify-content: flex-start; gap: 6px;
+    margin: 0 !important; padding: 0 !important; box-sizing: border-box;
+}
+
+.ticker-content {
+    flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 0.85rem; color: var(--color-text); line-height: normal; 
+}
+
+.ticker-img-preview {
+    width: 24px; height: 24px; border-radius: 4px;
+    object-fit: cover; flex-shrink: 0;
+}
+
+.ticker-music-thumb {
+    position: relative;
+    width: 24px; height: 24px; border-radius: 4px;
+    flex-shrink: 0; overflow: hidden;
+}
+
+.ticker-music-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(0.55);
+}
+
+.ticker-music-thumb .ticker-music-icon {
+    position: absolute; 
+    top: 53%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 19px; height: 19px;
+    z-index: 2; pointer-events: none;
+}
+
+.ticker-music-thumb .ticker-music-icon svg {
+    width: 100%; height: 100%; fill: #fff;
+}
+
+/* 正在播放的音乐标签：文字颜色自动同步主调色 */
+.ticker-music-name {
+    font-size: 0.75rem; 
+    color: var(--color-accent); /* 完美替换原有的写死橙色 */
+    flex-shrink: 0;
+    max-width: 80px; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+}
+
+.ticker-date {
+    font-size: 0.7rem; color: var(--color-text-secondary);
+    opacity: 0.7; flex-shrink: 0; line-height: normal;
+}
+</style>
+
+<div class="status-ticker-wrapper" onclick="window.location.href='{{ "status/" | relURL }}'">
+    <ul class="status-ticker-list" id="ticker-list">
+        <li class="status-ticker-item">正在加载动态...</li>
+    </ul>
+</div>
+
+<script>
+(function() {
+    const list = document.getElementById('ticker-list');
+    const apiUrl = "{{ $status_url | safeJS }}";
+    const scrollTime = {{ $interval }};
+
+    function timeAgo(date) {
+        const diffMs = new Date() - new Date(date);
+        const diffMinutes = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+
+        const targetDay = new Date(new Date(date).getFullYear(), new Date(date).getMonth(), new Date(date).getDate());
+        const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+        const diffDays = Math.floor((today - targetDay) / 86400000);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30);
+        const diffYears = Math.floor(diffDays / 365);
+
+        if (diffMinutes < 1) return '刚刚';
+        if (diffMinutes < 60) return diffMinutes + '分钟前';
+        if (diffHours < 24) return diffHours + '小时前';
+        if (diffDays === 0) return '今天';
+        if (diffDays === 1) return '昨天';
+        if (diffDays === 2) return '前天';
+        if (diffDays > 2 && diffDays < 7) return diffDays + '天前';
+        if (diffWeeks === 1) return '1周前';
+        if (diffWeeks > 1 && diffWeeks < 4) return diffWeeks + '周前';
+        if (diffMonths === 1) return '1个月前';
+        if (diffMonths > 1 && diffMonths < 12) return diffMonths + '个月前';
+        if (diffYears === 1) return '1年前';
+        if (diffYears > 1) return diffYears + '年前';
+
+        return new Date(date).toLocaleDateString('zh-CN');
+    }
+
+    const musicIconSVG = '<svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>';
+
+    function getMusicInfo(link) {
+        if (!link) return Promise.resolve(null);
+        const mp = new MusicPlayer();
+        return mp.load(link).then(songs => {
+            if (songs && songs.length > 0) {
+                return { name: songs[0].name, cover: songs[0].cover };
+            }
+            return null;
+        }).catch(() => null);
+    }
+
+    fetch(`${apiUrl}?t=${Date.now()}`)
+        .then(res => res.json())
+        .then(async data => {
+            let statuses = (data.statuses || []).slice(0, {{ $limit }});
+            if (statuses.length === 0) {
+                list.innerHTML = '<li class="status-ticker-item">暂无动态</li>';
+                return;
+            }
+
+            const musicCache = {};
+            for (const item of statuses) {
+                if (item.music && !musicCache[item.music]) {
+                    musicCache[item.music] = await getMusicInfo(item.music);
+                }
+            }
+
+            const renderItem = (item) => {
+                let left = '';
+                const hasMyImage = item.images && item.images.length > 0;
+                const hasMusic = !!(item.music && musicCache[item.music]);
+
+                if (hasMyImage && hasMusic) {
+                    // 两张图：我的图 + 音乐封面（带🎵图标）
+                    left = `<img src="${item.images[0]}" class="ticker-img-preview">`;
+                    left += `<div class="ticker-music-thumb"><img src="${musicCache[item.music].cover || ''}" onerror="this.style.display='none'"><div class="ticker-music-icon">${musicIconSVG}</div></div>`;
+                    left += `<span class="ticker-music-name">${musicCache[item.music].name || ''}</span>`;
+                } else if (hasMusic) {
+                    // 只有音乐
+                    if (musicCache[item.music].cover) {
+                        left = `<div class="ticker-music-thumb"><img src="${musicCache[item.music].cover}"><div class="ticker-music-icon">${musicIconSVG}</div></div>`;
+                    } else {
+                        left = `<span class="ticker-img-preview" style="background:rgba(255,152,0,0.1);display:flex;align-items:center;justify-content:center;">${musicIconSVG.replace('24','16').replace('24','16')}</span>`;
+                    }
+                    left += `<span class="ticker-music-name">${musicCache[item.music].name || ''}</span>`;
+                } else if (hasMyImage) {
+                    // 只有我的图
+                    left = `<img src="${item.images[0]}" class="ticker-img-preview">`;
+                }
+
+                return `
+                    <li class="status-ticker-item">
+                        ${left}
+                        <span class="ticker-content">${item.content
+                            .replace(/<[^>]*>/g, '')
+                            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                            .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                        }</span>
+                        <span class="ticker-date">${timeAgo(item.date)}</span>
+                    </li>
+                `;
+            };
+
+            let html = statuses.map(item => renderItem(item)).join('');
+            
+            if (statuses.length > 1) {
+                html += renderItem(statuses[0]);
+                list.innerHTML = html;
+                let index = 0;
+                const totalItems = statuses.length;
+                setInterval(() => {
+                    index++;
+                    list.style.transition = 'transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1)';
+                    list.style.transform = `translateY(-${index * 40}px)`;
+                    if (index === totalItems) {
+                        setTimeout(() => {
+                            list.style.transition = 'none';
+                            list.style.transform = 'translateY(0)';
+                            index = 0;
+                        }, 600);
+                    }
+                }, scrollTime);
+            } else {
+                list.innerHTML = html;
+            }
+        })
+        .catch(() => list.innerHTML = '<li class="status-ticker-item">加载失败</li>');
+})();
+</script>

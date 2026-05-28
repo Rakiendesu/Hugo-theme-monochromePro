@@ -1,0 +1,339 @@
+/* ==========================================================================
+   评论按钮样式
+   ========================================================================== */
+.status-actions {
+    opacity: 0.7;
+    display: flex;
+    justify-content: flex-end;
+    margin: 15px 0px 6px 0px;
+    padding-top: 0;
+    border-top: none;
+}
+
+.status-comment-toggle {
+    background: none;
+    border: none;
+    padding: 0px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+/* 按钮悬浮：切换为主强调色 */
+.status-comment-toggle:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.status-comment-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+.status-comments {
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+/* ==========================================================================
+   分享按钮
+   ========================================================================== */
+.comment-share-btn {
+    background: none;
+    border: none;
+    font-size: 0.82rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    padding: 4px 10px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.comment-share-btn:hover {
+    background: var(--color-background-hover);
+    color: var(--color-accent);
+}
+
+
+/* ==========================================================================
+   自动适配主题色 - 右侧滑出抽屉评论系统
+   ========================================================================== */
+
+/* ─── 防闪烁绝杀技 ─── */
+.tk-meta-input .el-input:has(input[name="link"]) {
+    display: none !important;
+}
+
+/* 1. 外层全屏遮罩 */
+.comment-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6) !important;
+    z-index: 10000;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+}
+.comment-modal-overlay.active {
+    display: flex;
+}
+
+/* 2. 容器魔改：Box 降维重塑为高定 Drawer */
+.comment-modal-box {
+    background: var(--color-background-card) !important;
+    border-radius: 24px 0 0 24px !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    box-shadow: -16px 0 48px rgba(15, 23, 42, 0.08) !important;
+    border-left: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+/* 激活时滑入动效 */
+.comment-modal-overlay.active .comment-modal-box {
+    animation: orangeDrawerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes orangeDrawerIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* 3. 头部精致化 */
+.comment-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 32px !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    font-weight: 800 !important;
+    font-size: 1.2rem !important;
+    color: var(--color-text) !important;
+    flex-shrink: 0;
+}
+/* 头部图标着色 */
+.comment-modal-header span svg {
+    vertical-align: middle;
+    margin-right: 8px;
+    color: var(--color-accent) !important;
+    width: 20px;
+    height: 20px;
+}
+
+/* 关闭按钮 */
+.comment-modal-close {
+    background: var(--color-background-hover) !important;
+    border: none;
+    font-size: 0.9rem !important;
+    cursor: pointer;
+    color: var(--color-text-secondary) !important;
+    width: 36px;
+    height: 36px;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease !important;
+}
+/* 关闭按钮悬浮：15% 透明度主题色背景 */
+.comment-modal-close:hover {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent) !important;
+    color: var(--color-accent) !important;
+    transform: rotate(90deg);
+}
+
+/* 4. 滚动主体部分 */
+.comment-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 32px 32px 32px !important;
+}
+
+/* ─── 深度精修 Twikoo 内部组件 ─── */
+
+.twikoo {
+    /* ⚠️ 核心修复提示：强烈建议将下方的 3000% 修改为正常值（如 20px），以彻底解决页面卡顿与滚动变慢的问题 */
+    padding-bottom: 400%;
+    margin-bottom: 400%;
+}
+
+/* 昵称与邮箱输入框融合设计 */
+.tk-comments .el-input-group {
+    background: var(--color-background-hover) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 14px !important;
+    overflow: hidden;
+    box-shadow: none !important;
+    transition: all 0.25s ease !important;
+}
+/* 输入框聚焦状态 */
+.tk-comments .el-input-group:focus-within {
+    border-color: var(--color-accent) !important;
+    background: var(--color-background-card) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 12%, transparent) !important;
+}
+.tk-comments .el-input-group__prepend {
+    display: flex !important;
+    align-items: center !important;
+    min-width: 30px;
+    white-space: nowrap;
+    background: transparent !important;
+    background-color: rgba(144,147,153,0.13) !important;
+    border: none !important;
+    color: var(--color-text-secondary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600;
+}
+.tk-comments .el-input__inner {
+    background: transparent !important;
+    border: none !important;
+    color: var(--color-text) !important;
+    font-size: 0.9rem !important;
+    padding: 12px !important;
+}
+
+/* 大评论输入框升级 */
+.tk-comments .el-textarea__inner {
+    background: var(--color-background-hover) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 16px !important;
+    font-size: 0.95rem !important;
+    padding: 16px !important;
+    color: var(--color-text) !important;
+    line-height: 1.7 !important;
+    transition: all 0.25s ease !important;
+    resize: none !important;
+}
+.tk-comments .el-textarea__inner:focus {
+    border-color: var(--color-accent) !important;
+    background: var(--color-background-card) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 12%, transparent) !important;
+}
+
+/* 表情包小按钮 */
+.tk-submit-action-icon svg {
+    fill: var(--color-text-secondary) !important;
+    transition: all 0.2s;
+}
+.tk-submit-action-icon:hover svg {
+    fill: var(--color-accent) !important;
+    transform: scale(1.1);
+}
+
+/* OwO 表情面板美化 */
+.OwO-body {
+    border: 1px solid var(--color-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08) !important;
+    background: var(--color-background-card) !important;
+}
+/* 激活的表情分类标签 */
+.OwO-packages li.OwO-package-active {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent) !important;
+    color: var(--color-accent) !important;
+    font-weight: 600;
+}
+
+/* 按钮打磨 */
+.tk-comments .el-button {
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+}
+.tk-comments .tk-preview {
+    background: var(--color-background-hover) !important;
+    color: var(--color-text-secondary) !important;
+    border: none !important;
+}
+.tk-comments .tk-preview:hover {
+    background: var(--color-border) !important;
+    color: var(--color-text) !important;
+}
+/* 发送按钮：直接应用主题色 */
+.tk-comments .tk-send {
+    background: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
+}
+/* 发送按钮悬浮：自动混入 15% 黑色变暗成点击深色，不需要写死颜色值 */
+.tk-comments .tk-send:hover {
+    background: color-mix(in srgb, var(--color-accent), black 15%) !important;
+    border-color: color-mix(in srgb, var(--color-accent), black 15%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-accent) 35%, transparent) !important;
+}
+
+/* 历史评论区 */
+.tk-comments-count {
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    color: var(--color-text) !important;
+}
+.tk-comment {
+    padding: 24px 0 !important;
+    border-bottom: 1px solid var(--color-border) !important;
+}
+.tk-nick {
+    color: var(--color-text) !important;
+    font-weight: 700 !important;
+}
+/* 评论体内的链接 */
+.tk-comment a {
+    color: var(--color-accent) !important;
+}
+
+/* 5. 移动端全宽优化 */
+@media (max-width: 550px) {
+    .comment-modal-box {
+        max-width: 100% !important;
+        border-radius: 0 !important;
+    }
+    .comment-modal-body {
+        padding: 20px 20px 24px 20px !important;
+    }
+}
+
+/* 核心修复：强制让 Element UI 的输入框组件撑满整列宽度 */
+.tk-comments .tk-meta-input .el-input {
+    width: 100% !important;
+    display: flex !important;
+}
+
+/* 核心修复：让输入框内部的 input 标签把右侧剩余空间全部填满 */
+.tk-comments .el-input__inner {
+    flex: 1 !important;
+    width: 100% !important;
+}
+.tk-meta-input .el-input + .el-input {
+    margin: 0 !important;
+}
+/* 核心修复：强制所有 tk-meta-input 单列布局（包括回复框） */
+.tk-comments .tk-meta-input {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+/* 下面的那些小链接按钮 */
+.tk-footer {
+    color: var(--color-text-secondary) !important;
+}
+.tk-footer a {
+    color: var(--color-text-secondary) !important;
+    transition: color 0.2s;
+}
+.tk-footer a:hover {
+    color: var(--color-accent) !important;
+}

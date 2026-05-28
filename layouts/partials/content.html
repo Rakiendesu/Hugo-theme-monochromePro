@@ -1,0 +1,15 @@
+{{ $ctx := .ctx }}
+{{ $content := .content }}
+{{ $enable_line_no := ($ctx.Scratch.Get "params").syntax_highlight.prism.enable_line_no | default true }}
+
+<article {{ if $enable_line_no }}class="line-numbers"{{ end }}>
+    {{ $content := $content | replaceRE "<table(.*?)>" "<table$1 class=\"mc-table\">" }}
+    {{ if eq ($ctx.Scratch.Get "params").syntax_highlight.lib "prism.js" }}
+        {{ $content = $content | replaceRE "<pre>" "<pre class=\"language-text\">" }}
+        {{ $content = $content | replaceRE "<pre([^>]*)class=\"([^>]*)\"([^>]*)>" "<pre$1 class=\"mc-prism hide $2\" $3>" }}
+    {{ else if eq ($ctx.Scratch.Get "params").syntax_highlight.lib "builtin" }}
+        {{/* Chroma: 添加折叠容器类 */}}
+        {{ $content = $content | replaceRE "<div class=\"highlight\">" "<div class=\"highlight chroma-fold\">" }}
+    {{ end }}
+    {{ $content | safeHTML }}
+</article>

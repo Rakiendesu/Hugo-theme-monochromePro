@@ -1,0 +1,573 @@
+/* ~~~~~~~~~气球图片 圆形 带框 有阴影~~~~~~~~~~ */
+.rounded {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;          /* 圆形效果 */
+  object-fit: cover;           /* 图片填充模式 */
+  margin-bottom: 0.8rem;       /* 底部间距 */
+  border: 2px solid #fff;      /* 白色边框 */
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.2); /* 阴影效果 */
+  display: block;              /* 确保正确应用尺寸 */
+  box-sizing: border-box;      /* 边框计入宽度 */
+}
+/* ~~~~~~~~~~防止打开灯箱背景抖动~~~~~~~~~~ */
+/* 完全禁止 Fancybox 修改页面滚动 */
+
+/* ~~~~~~~~~~让footer沉底~~~~~~~~~~ */
+/* 方法2：Flexbox 布局 - 让 footer 沉到最底部 */
+/* ~~~~~~~~~~让footer沉底~~~~~~~~~~ */
+html {
+  height: 100%;
+
+  /* 1. 禁止 iOS 输入框聚焦时自动缩放（核心） */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+/* 禁止双击缩放 */
+    touch-action: manipulation;
+}
+/* 禁止 iOS 输入框聚焦时自动放大（视觉保持原字号） */
+input, textarea, select {
+    font-size: 16px !important;
+    transform: scale(0.875); /* 16px * 0.875 ≈ 14px 视觉 */
+    transform-origin: left center;
+    margin-right: -12.5%; /* 补偿缩放后的空间 */
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 0 1rem;
+  max-width: 880px;
+}
+
+main {
+  flex: 1;
+}
+
+/* ===== 1. 定义自定义字体 ===== */
+
+
+/* ===== 2. 全局强制覆盖字体 ===== */
+/* 覆盖 <body> 和所有文本元素 *//*
+body,
+p, h1, h2, h3, h4, h5, h6,
+a, span, div, li, td, th, input, textarea, button {
+    font-family: 'ZQL', sans-serif !important;
+}
+*/
+/* ===== 3. 特殊组件覆盖 ===== */
+/* 菜单栏（根据你的主题调整） *//*
+.pure-menu-link,
+.pure-menu-item,
+.pure-menu-heading {
+    font-family: 'ZQL', sans-serif !important;
+}
+*/
+/* 代码块（保持等宽字体） *//*
+pre, code, kbd, samp {
+    font-family: monospace, monospace !important;
+}
+*/
+/* Emoji 类（避免被覆盖） *//*
+.emoji, .emojify {
+     font-family: 'ZQL', sans-serif !important;
+}
+*/
+/* ~~~~~~~~瀑布流图片~~~~~~~*/
+.content-margin p:has(> img:nth-child(2)) {
+    column-count: 2;
+    column-gap: 8px;
+    margin: 6px 0;
+}
+
+.content-margin p:has(> img:nth-child(3)) {
+    column-count: 3;
+}
+
+.content-margin p:has(> img:nth-child(4)) {
+    column-count: 4;
+}
+
+.content-margin p:has(> img:nth-child(5)) {
+    column-count: 5;
+}
+
+.content-margin p:has(> img:nth-child(6)) {
+    column-count: 4;
+}
+
+.content-margin p:has(> img:nth-child(2)) img {
+    display: inherit;
+}
+
+.content-margin p:has(> img:nth-child(6)) img {
+    margin-bottom: 8px;
+}
+
+/*~~~~~~~~~~短代码配置~~~~~~~~*/
+
+.fullscreen{column-count:4;column-gap:6px;}
+.fullscreen img{display:inherit;margin-bottom:8px;}
+@media (max-width: 980px){
+  .fullscreen{margin-left: 0;width:auto;column-count:3;}
+}
+
+
+
+/*~~~~~~~~~~~修改日期透明度~~~~~~~~~~*/
+
+.list-layout span {
+  opacity: 0.3 !important;
+}
+
+/*****面包屑导航透明度******/
+.breadcrumbs{
+  opacity: 0.5 !important;
+}
+
+
+/*~~~~~~~导航栏主题适配美化版（居中+手机适配，已净化格式）~~~~~~~*/
+/* =========================================
+   侧边栏丝滑侧滑 + GPU 硬件加速
+   ========================================= */
+
+/* 1. 默认隐藏状态 */
+#sidebar {
+    /* 【致命关键】绝对不能写 display: none！必须让它一直保持渲染状态 */
+    display: block !important; 
+    
+    /* 核心 1：使用 translate3d 强制开启 GPU 硬件加速渲染进程 */
+    /* 假设你的侧边栏是从左往右滑出（-100%）。如果是从右往左，改为 (100%, 0, 0) */
+    transform: translate3d(-100%, 0, 0); 
+    
+    /* 核心 2：用 visibility 替代 display，隐藏时不占用鼠标点击事件 */
+    visibility: hidden; 
+    
+    /* 核心 3：加入微小的透明度淡入，视觉上会高级非常多 */
+    opacity: 0; 
+    
+    /* 核心 4：高定制贝塞尔曲线 (cubic-bezier) */
+    /* 这个参数是经典的 Apple Style 动效：前快后慢，带有一点点极其微妙的阻尼吸附感 */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.4s step-end; /* 隐藏时等动画结束再隐藏，显示时瞬间显示 */
+
+    /* 核心 5：提前通知浏览器，在独立复合层中预热 GPU，拒绝任何掉帧 */
+    will-change: transform, opacity; 
+}
+
+/* 2. 复选框被勾选时的激活状态 */
+#sidebar_btn_input:checked ~ #sidebar {
+    /* 【关键】这里不需要 display: block */
+    transform: translate3d(0, 0, 0); /* 归位到原点 */
+    visibility: visible;
+    opacity: 1;
+    
+    /* 激活时，visibility 必须瞬间变为可见，不能被 step-end 延迟 */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0s linear; 
+}
+/* ========== 基础重置 ========== */
+#sidebar {
+    overflow: hidden !important;
+    background-color: var(--color-background-card, transparent);
+    transition: background-color 0.3s ease;
+}
+
+#sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* ========== 菜单项主体 ========== */
+#sidebar ul li {
+    display: block;
+    width: 100%;
+    margin: 4px 0; /* 略微增加基础间距，视觉更透气 */
+    padding: 0;
+    border-radius: 8px;
+}
+
+/* ========== 链接样式 ========== */
+#sidebar ul li a {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 核心：文字绝对居中 */
+    width: 100%;
+    padding: 14px 20px;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--color-navbar-item-inactive, #666);
+    border-radius: 8px;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    position: relative;
+    gap: 8px;
+}
+
+/* ========== 悬停状态 ========== */
+#sidebar ul li a:hover {
+    background-color: var(--color-background-hover, rgba(0,0,0,0.05));
+    color: var(--color-navbar-item-active, #000);
+}
+
+/* ========== 点击反馈 (仅缩放 a 标签，防止外层坍塌) ========== */
+#sidebar ul li a:active {
+    background-color: var(--color-background-overlay, rgba(0,0,0,0.08));
+    transform: scale(0.96);
+}
+
+/* ========== 当前活跃页面高亮 ========== */
+#sidebar ul li a[aria-current="page"],
+#sidebar ul li.active a {
+    color: var(--color-navbar-item-active, #e68900);
+    background-color: var(--color-background-hover, rgba(255,152,0,0.1));
+    font-weight: 600;
+}
+
+/* 活跃项底部指示条（居中适配） */
+#sidebar ul li a[aria-current="page"]::after,
+#sidebar ul li.active a::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    background-color: var(--color-link, #e68900);
+    border-radius: 3px;
+}
+
+/* ========== 分隔线 ========== */
+#sidebar ul li.divider {
+    height: 1px;
+    margin: 12px 20px;
+    padding: 0;
+    background-color: var(--color-border-collapsible-menu, rgba(0,0,0,0.1));
+    pointer-events: none;
+    border-radius: 0;
+}
+
+/* ========== 侧边栏个人信息主题适配 ========== */
+.sidebar-profile {
+    border-bottom: 1px solid var(--color-border-collapsible-menu, rgba(0,0,0,0.1)) !important;
+    transition: border-color 0.3s ease;
+    padding-bottom: 1.5rem;
+}
+
+.sidebar-profile img {
+    border-color: var(--color-border, #eee) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    transition: box-shadow 0.3s ease;
+}
+
+.sidebar-profile div {
+    color: var(--color-text-secondary, #666) !important;
+    transition: color 0.3s ease;
+}
+
+/* ========== 滚动条美化 ========== */
+#sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+#sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+#sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--color-border, #ccc);
+    border-radius: 4px;
+}
+
+/* ========== 暗色主题优化 ========== */
+html[data-theme="dark"] .sidebar-profile img {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+}
+html[data-theme="dark"] #sidebar ul li a:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="dark"] #sidebar ul li a:active {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+
+/* ================================================================
+   手机端适配（≤768px）
+   ================================================================ */
+@media screen and (max-width: 768px) {
+    #sidebar {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #sidebar ul li a {
+        padding: 16px 20px;
+        font-size: 1.1rem;
+        min-height: 48px; /* 苹果 HIG 推荐最小触控高度 */
+        letter-spacing: 0.8px;
+    }
+
+    #sidebar ul li {
+        margin: 4px 0;
+        border-radius: 10px;
+    }
+
+    /* 活跃指示条加粗 */
+    #sidebar ul li a[aria-current="page"]::after,
+    #sidebar ul li.active a::after {
+        width: 32px;
+        height: 3px;
+        bottom: 6px;
+    }
+
+    #sidebar ul li.divider {
+        margin: 16px 24px;
+    }
+
+    .sidebar-profile {
+        padding: 2rem 0 1.5rem 0 !important;
+    }
+    .sidebar-profile img {
+        width: 72px;
+        height: 72px;
+    }
+    .sidebar-profile div {
+        font-size: 1rem;
+    }
+}
+
+/* ================================================================
+   小屏手机优化（≤480px）
+   ================================================================ */
+@media screen and (max-width: 480px) {
+    #sidebar ul li a {
+        padding: 14px 16px;
+        font-size: 1rem;
+        min-height: 44px;
+        gap: 6px;
+    }
+
+    #sidebar ul li {
+        margin: 3px 0;
+        border-radius: 8px;
+    }
+
+    #sidebar ul li.divider {
+        margin: 10px 16px;
+    }
+
+    .sidebar-profile img {
+        width: 64px;
+        height: 64px;
+    }
+    .sidebar-profile div {
+        font-size: 0.95rem;
+    }
+}
+/* ~~~~~~~~~twikoo评论系统美化~~~~~~~~ */
+
+
+
+/* -------修改html和body自适应，激活灯箱 后面元素不变形-------- */
+/* ------- 页面宽度自适应 + 灯箱修复 ------- */
+body {
+    margin: 0 auto;
+    padding: 0 1rem;
+    max-width: 880px;
+}
+
+@media (min-width: 48rem) {
+    body {
+        padding: 0 2rem;
+    }
+}
+
+/* 灯箱打开时保持不变，防止抖动 */
+html.with-fancybox body {
+    padding: 0 1rem !important;
+    margin: 0 auto !important;
+    max-width: 880px !important;
+}
+
+@media (min-width: 48rem) {
+    html.with-fancybox body {
+        padding: 0 2rem !important;
+    }
+}
+
+/* 取消包含图片的链接的下划线 */
+a:has(img) {
+    border-bottom: none !important;
+}
+
+/* 取消移动端点击 a 标签时的蓝色高亮框 */
+a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 保险层 */
+a:active,
+a:focus {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 全局关闭图片加载失败的小图标 */
+img::-webkit-broken,
+img::before {
+    display: none !important;
+}
+
+img:-moz-broken {
+    visibility: hidden;
+}
+
+/* 全局关闭评论区的浏览器显示 */
+.tk-extras .tk-extra:last-child {
+    display: none !important;
+}
+
+
+/* ==========================================================================
+   评论按钮（卡片上的"评论"按钮）
+   ========================================================================== */
+.status-actions {
+    opacity: 0.7;
+}
+.status-comment-toggle {
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+}
+.status-comment-toggle:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* ==========================================================================
+   分享按钮
+   ========================================================================== */
+.comment-share-btn {
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.comment-share-btn:hover {
+    background: var(--color-background-hover);
+    color: var(--color-accent);
+}
+
+/* ==========================================================================
+   提交框输入区（昵称、邮箱、文本框、表情、OwO、预览、发送）
+   ========================================================================== */
+
+/* 昵称与邮箱输入框 */
+.tk-comments .el-input-group {
+    background: var(--color-background-hover) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 14px !important;
+    transition: all 0.25s ease !important;
+}
+.tk-comments .el-input-group:focus-within {
+    border-color: var(--color-accent) !important;
+    background: var(--color-background-card) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 12%, transparent) !important;
+}
+.tk-comments .el-input-group__prepend , .el-input__inner{
+    color: var(--color-text-secondary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600;
+    border-color:rgba(144,147,153,0) !important;
+    border-radius:14px !important;
+}
+.tk-comments .el-input__inner {
+    color: var(--color-text) !important;
+    font-size: 0.9rem !important;
+}
+
+/* 评论文本框 */
+.tk-comments .el-textarea__inner {
+    background: var(--color-background-hover) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 16px !important;
+    font-size: 0.95rem !important;
+    color: var(--color-text) !important;
+    transition: all 0.25s ease !important;
+}
+.tk-comments .el-textarea__inner:focus {
+    border-color: var(--color-accent) !important;
+    background: var(--color-background-card) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 12%, transparent) !important;
+}
+
+/* 表情按钮 */
+.tk-submit-action-icon svg {
+    fill: var(--color-text-secondary) !important;
+    transition: all 0.2s;
+}
+.tk-submit-action-icon:hover svg {
+    fill: var(--color-accent) !important;
+    transform: scale(1.1);
+}
+
+/* OwO 表情面板 */
+.OwO-body {
+    border: 1px solid var(--color-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08) !important;
+    background: var(--color-background-card) !important;
+}
+.OwO-packages li.OwO-package-active {
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent) !important;
+    color: var(--color-accent) !important;
+    font-weight: 600;
+}
+
+/* 预览按钮 */
+.tk-comments .tk-preview {
+    background: var(--color-background-hover) !important;
+    color: var(--color-text-secondary) !important;
+    border-radius: 12px !important;
+}
+.tk-comments .tk-preview:hover {
+    background: var(--color-border) !important;
+    color: var(--color-text) !important;
+}
+
+/* 发送按钮 */
+.tk-comments .tk-send {
+    background: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
+}
+.tk-comments .tk-send:hover {
+    background: color-mix(in srgb, var(--color-accent), #000000 10%) !important; /* 悬浮时自动混入 10% 黑色实现暗化 */
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-accent) 35%, transparent) !important;
+}
+/* 下面那些小按钮, 链接等 */
+.tk-comments-actions .tk-icon svg {
+    fill: var(--color-text-secondary) !important;
+}
+.tk-comments-actions .tk-icon:hover svg {
+    fill: var(--color-accent) !important;
+}
+.tk-footer {
+    color: var(--color-text-secondary) !important;
+}
+.tk-footer a {
+    color: var(--color-text-secondary) !important;
+    transition: color 0.2s;
+}
+.tk-footer a:hover {
+    color: var(--color-accent) !important;

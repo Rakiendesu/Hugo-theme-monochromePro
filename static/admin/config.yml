@@ -1,0 +1,127 @@
+backend:
+  name: git-gateway
+  branch: main
+
+publish_mode: simple
+
+# 界面语言
+locale: zh-Hans
+
+# 核心：处理中文文件名传输，防止 GitHub API 报错
+slug:
+  encoding: "unicode"
+  clean_accents: true
+  sanitize_replacement: "-"
+
+media_folder: "static/images"
+public_folder: "/images"
+
+collections:
+
+
+
+  # ========== 2026年文章管理 ==========
+  - name: "post2026"
+    label: "2026年文章管理"
+    label_singular: "文章"
+    description: "管理 content/post/2026 下的所有文章"
+    folder: "content/post/2026"
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+
+    slug: "{{month}}{{day}}{{title}}"
+
+    
+    fields:
+      - { label: "标题", name: "title", widget: "string", hint: "文章标题" }
+      - { label: "发布日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", format: "YYYY-MM-DD", hint: "格式如：2026-01-17" }
+      - { label: "草稿状态", name: "draft", widget: "boolean", default: false, hint: "勾选后文章不会发布" }
+      - { label: "作者", name: "author", widget: "string", default: "" }
+      - { label: "描述/摘要", name: "description", widget: "text", required: false }
+      - { label: "标签", name: "tags", widget: "list", required: false, hint: "如：NAS, 飞牛" }
+      - { label: "分类", name: "categories", widget: "list", required: false, hint: "如：💻技术" }
+      - { label: "封面图（白天）", name: "bookcase_cover_src", widget: "image", required: false }
+      - { label: "封面图（黑夜）", name: "bookcase_cover_src_dark", widget: "image", required: false }
+      - { label: "画廊资源", name: "gallery_resources", widget: "string", required: false }
+      - { label: "权重", name: "weight", widget: "number", value_type: "int", required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+# ========== 2027年文章管理 ==========
+  - name: "post2027"
+    label: "2027年文章管理"
+    label_singular: "文章"
+    description: "管理 content/post/2027 下的所有文章"
+    folder: "content/post/2027"
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+
+    slug: "{{month}}{{day}}{{title}}"
+
+    fields:
+      - { label: "标题", name: "title", widget: "string", hint: "文章标题" }
+      - { label: "发布日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", format: "YYYY-MM-DD", hint: "格式如：2026-01-17" }
+      - { label: "草稿状态", name: "draft", widget: "boolean", default: false, hint: "勾选后文章不会发布" }
+      - { label: "作者", name: "author", widget: "string", default: "" }
+      - { label: "描述/摘要", name: "description", widget: "text", required: false }
+      - { label: "标签", name: "tags", widget: "list", required: false, hint: "如：NAS, 飞牛" }
+      - { label: "分类", name: "categories", widget: "list", required: false, hint: "如：💻技术" }
+      - { label: "封面图（白天）", name: "bookcase_cover_src", widget: "image", required: false }
+      - { label: "封面图（黑夜）", name: "bookcase_cover_src_dark", widget: "image", required: false }
+      - { label: "画廊资源", name: "gallery_resources", widget: "string", required: false }
+      - { label: "权重", name: "weight", widget: "number", value_type: "int", required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+# ========== 2028年文章管理 ==========
+  - name: "post2028"
+    label: "2027年文章管理"
+    label_singular: "文章"
+    description: "管理 content/post/2028 下的所有文章"
+    folder: "content/post/2028"
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+
+    slug: "{{month}}{{day}}{{title}}"
+
+    fields:
+      - { label: "标题", name: "title", widget: "string", hint: "文章标题" }
+      - { label: "发布日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", format: "YYYY-MM-DD", hint: "格式如：2026-01-17" }
+      - { label: "草稿状态", name: "draft", widget: "boolean", default: false, hint: "勾选后文章不会发布" }
+      - { label: "作者", name: "author", widget: "string", default: "" }
+      - { label: "描述/摘要", name: "description", widget: "text", required: false }
+      - { label: "标签", name: "tags", widget: "list", required: false, hint: "如：NAS, 飞牛" }
+      - { label: "分类", name: "categories", widget: "list", required: false, hint: "如：💻技术" }
+      - { label: "封面图（白天）", name: "bookcase_cover_src", widget: "image", required: false }
+      - { label: "封面图（黑夜）", name: "bookcase_cover_src_dark", widget: "image", required: false }
+      - { label: "画廊资源", name: "gallery_resources", widget: "string", required: false }
+      - { label: "权重", name: "weight", widget: "number", value_type: "int", required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+
+  # ========== 画廊管理 ==========
+  - name: "gallery"
+    label: "画廊管理"
+    label_singular: "画廊"
+    description: "管理 content/gallery 下的相册"
+    folder: "content/gallery"
+    create: true
+    delete: true
+    slug: "{{title}}"
+    extension: md
+    format: frontmatter
+    
+    fields:
+      - { label: "标题", name: "title", widget: "string", hint: "如：ACG, 绘画, 雨中曲" }
+      - { label: "发布日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", format: "YYYY-MM-DD", required: true, hint: "必填" }
+      - { label: "类型", name: "type", widget: "string", default: "gallery", hint: "固定为 gallery，一般不用改" }
+      - { label: "画廊图片", name: "gallery_img_src", widget: "image", required: true, hint: "相册封面图，必填" }
+      - { label: "封面图（白天）", name: "bookcase_cover_src", widget: "image", required: true, hint: "白天模式封面，必填" }
+      - { label: "封面图（黑夜）", name: "bookcase_cover_src_dark", widget: "image", required: true, hint: "黑夜模式封面，必填" }
+      - { label: "分类", name: "categories", widget: "list", required: true, default: ["🖼️相册"], hint: "如：🖼️相册" }
+      - { label: "权重", name: "weight", widget: "number", value_type: "int", required: true, hint: "数字越大排序越靠前，必填" }
+      - { label: "正文", name: "body", default: "{{< fullscreen >}}\n\n{{< /fullscreen >}}", widget: "markdown" }

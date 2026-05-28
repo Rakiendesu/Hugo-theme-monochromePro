@@ -1,0 +1,87 @@
+/* 修改后的原 TOC 容器样式 */
+.collapsible-menu-wrapper {
+  margin: 2rem 0; /* 使用标准边距替代 my-8 */
+  font-size: 0.9rem;
+  padding: 1.25rem;
+  /* 柔和的边框与自动计算的淡色主题背景 */
+  border: 1px solid var(--color-border-collapsible-menu);
+  background-color: color-mix(in srgb, var(--color-accent) 2%, transparent); 
+  border-radius: 16px; /* 统一圆角 */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--color-accent); /* 悬浮时边框变为主调色 */
+    box-shadow: 0 8px 25px color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+
+  /* 标题区域 */
+  .collapsible-menu-type {
+    cursor: pointer;
+    span {
+      font-weight: 700; /* font-bold */
+      line-height: 1.5rem;
+      color: var(--color-text);
+      display: inline-flex;
+      align-items: center;
+      
+      &::before {
+        content: "📍"; /* 在标题前加个小装饰 */
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  summary.collapsible-menu-type span {
+    margin-left: .3rem;
+  }
+}
+
+/* 核心内容列表样式 */
+#TableOfContents {
+  line-height: 1.6rem;
+  margin-top: 0.75rem;
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+
+    /* 嵌套列表层级线 */
+    ul {
+      margin-left: 1rem;
+      padding-left: 0.75rem;
+      border-left: 1px dashed color-mix(in srgb, var(--color-accent) 30%, transparent); /* 子目录左侧主题色虚线 */
+    }
+  }
+
+  li {
+    margin-top: 0.5rem;
+  }
+
+  a {
+    color: var(--color-text);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 8px; /* 链接的圆角 */
+    display: inline-block;
+    transition: all 0.2s ease;
+
+    /* 悬浮效果：主题色文字 + 主题色淡背景 */
+    &:hover {
+      color: var(--color-accent) !important;
+      background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+      padding-left: 15px; /* 悬浮时往右推一点点，增加动感 */
+    }
+  }
+}
+
+/* Changelog 列表布局优化 */
+article#collapsible_menu_changelogs {
+  line-height: 1.75rem;
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: max-content 1fr;
+  margin-top: 1rem;
+}

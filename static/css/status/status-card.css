@@ -1,0 +1,140 @@
+/* ==========================================================================
+   置顶卡片样式
+   ========================================================================== */
+.status-item[data-pinned] {
+    position: relative;
+    border: none;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: transform 0.3s ease, opacity 0.6s ease;
+    float: left;
+    box-sizing: border-box;
+    background: linear-gradient(to bottom, rgba(255, 152, 0, 0.05), var(--color-background-card) 180%);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.status-item[data-pinned].is-shown {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.status-item[data-pinned]::before,
+.status-item[data-pinned]::after {
+    display: none;
+}
+
+.status-item[data-pinned]::before {
+    display: block;
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1.8px;
+    background: linear-gradient(to bottom, rgba(255, 152, 0, 0.8), rgba(255, 152, 0, 0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.status-item[data-pinned]::after {
+    display: block;
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1.8px;
+    background: linear-gradient(to bottom, rgba(255, 152, 0, 1), rgba(255, 152, 0, 0.6));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.status-item[data-pinned]:hover::after { opacity: 1; }
+.status-item[data-pinned]:hover::before { opacity: 0; }
+
+.status-pin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: #ff9800;
+    font-weight: 600;
+    margin-bottom: 8px;
+    background: rgba(255, 152, 0, 0.2);
+    padding: 3px 10px;
+    border-radius: 12px;
+    width: fit-content;
+    margin-right:5px;
+}
+
+/* ==========================================================================
+   普通卡片样式
+   ========================================================================== */
+.status-item:not([data-pinned]) {
+    background: linear-gradient(to bottom, rgba(151,210,247, 0.09), var(--color-background-card) 180%);
+    border: none;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: transform 0.3s ease, opacity 0.6s ease;
+    float: left;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+}
+
+.status-item:not([data-pinned])::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1.8px;
+    background: linear-gradient(to bottom, rgba(34,144,209, 0.6), rgba(39,228,228, 0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+
+.status-item:not([data-pinned])::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1.8px;
+    background: linear-gradient(to bottom, rgba(34,144,209, 0.8), rgba(39,228,228, 0.6));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.status-item:not([data-pinned]):hover { z-index: 10; }
+.status-item:not([data-pinned]):hover::after { opacity: 1; }
+
+.status-item:not([data-pinned]).is-shown {
+    opacity: 1;
+    transform: translateY(0);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}

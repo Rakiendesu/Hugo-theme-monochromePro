@@ -1,0 +1,387 @@
+{{ define "content" }}
+
+<style>
+    .gallery-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .gallery-header {
+        margin-bottom: 30px;
+    }
+
+    .gallery-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    /* ====== Masonry 布局 ====== */
+    .gallery-grid {
+        position: relative;
+        margin: 0 auto;
+    }
+
+    .grid-sizer,
+    .gallery-item {
+        width: calc(33.333% - 8px);
+    }
+
+    .gutter-sizer {
+        width: 12px;
+    }
+
+    @media (max-width: 640px) {
+        .grid-sizer,
+        .gallery-item {
+            width: calc(50% - 6px);
+        }
+        .gutter-sizer {
+            width: 12px;
+        }
+    }
+
+    /* ====== 卡片 ====== */
+    .gallery-item {
+        margin-bottom: 12px;
+        float: left;
+        box-sizing: border-box;
+    }
+
+    .gallery-item a {
+        display: block;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--color-background-overlay, #e8e8e8);
+    }
+
+    /* ====== 占位符 ====== */
+    .gallery-item .spinner {
+        display: block;
+        width: 100%;
+        background: var(--color-background-overlay, #e8e8e8);
+        border-radius: 8px;
+        transition: opacity 0.3s ease; 
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .gallery-item .spinner::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* ====== 图片 ====== */
+    .gallery-item img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .gallery-item img.loaded {
+        opacity: 1;
+        position: relative;
+        transition: opacity 0.3s ease;
+    }
+
+/* ==========================================================================
+   加载更多按钮
+   ========================================================================== */
+.gallery-load-area {
+    text-align: center;
+    margin: 30px 0;
+    clear: both;
+}
+.gallery-load-btn {
+    background: none;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    padding: 12px 20px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    width: 100%;
+    height: 60px;
+    text-align: center;
+    box-sizing: border-box;
+}
+.gallery-load-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+.gallery-load-btn:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+}
+</style>
+
+
+<div class="gallery-container">
+    <div class="gallery-header">
+        <h1>{{ .Title }}</h1>
+    </div>
+
+    <div id="gallery-grid" class="gallery-grid">
+        <div class="grid-sizer"></div>
+        <div class="gutter-sizer"></div>
+    </div>
+
+    <div class="gallery-load-area">
+        <button id="gallery-load-btn" class="gallery-load-btn">加载更多</button>
+    </div>
+</div>
+
+
+<script src="{{ .Site.Params.masonry.jsUrl | safeURL }}"></script>
+<script src="{{ .Site.Params.masonry.imagesloaded | safeURL }}"></script>
+
+<script>
+(function() {
+    'use strict';
+
+    // ========== 1. 解析 markdown 图片 ==========
+    const rawContent = {{ .RawContent | jsonify }};
+    const imgRegex = /!\[.*?\]\((https?:\/\/[^\s)]+)\)/g;
+    const allImages = [];
+    let match;
+    while ((match = imgRegex.exec(rawContent)) !== null) {
+        allImages.push(match[1]);
+    }
+
+    if (allImages.length === 0) {
+        document.getElementById('gallery-grid').innerHTML =
+            '<p style="text-align:center;color:#999;">暂无图片</p>';
+        document.getElementById('gallery-load-btn').style.display = 'none';
+        return;
+    }
+
+    // ========== 2. 配置 ==========
+    const pageSize = 12;
+    let currentIndex = 0;
+    let msnry = null;
+    let isLoading = false;
+    const $grid = $('#gallery-grid');
+    const $btn = $('#gallery-load-btn');
+
+    // ========== 3. 创建单张图片卡片 ==========
+    function createItem(url) {
+        const aspectRatio = 0.75 + Math.random() * 0.75;
+        
+        return `
+            <div class="gallery-item">
+                <a href="${url}" data-fancybox="gallery">
+                    <div class="spinner" style="padding-top: ${aspectRatio * 100}%;"></div>
+                    <img src="${url}" loading="lazy" alt="">
+                </a>
+            </div>
+        `;
+    }
+
+    // ========== 4. 渲染一批图片 ==========
+    function renderBatch(urls) {
+        const html = urls.map(createItem).join('');
+        $grid.append(html);
+    }
+
+    // ========== 5. 初始化 Masonry ==========
+    function initMasonry() {
+        return $grid.masonry({
+            itemSelector: '.gallery-item',
+            columnWidth: '.grid-sizer',
+            gutter: '.gutter-sizer',
+            percentPosition: true,
+            transitionDuration: '0.1s',
+            hiddenStyle: {
+                opacity: 0,
+                transform: 'translateY(30px)'
+            },
+            visibleStyle: {
+                opacity: 1,
+                transform: 'translateY(0)'
+            }
+        }).data('masonry');
+    }
+
+    // ========== 6. 绑定单张图片加载（静默重试）==========
+    function bindImageLoad($item) {
+        var $img = $item.find('img');
+        var $spinner = $item.find('.spinner');
+        var loaded = false;
+        var src = $img.attr('src');
+
+        function handleLoaded() {
+            if (loaded) return;
+            loaded = true;
+            
+            $img.addClass('loaded');
+            
+            $spinner.css({
+                'animation': 'none',
+                'opacity': '0',
+                'transition': 'opacity 0.3s ease'
+            });
+            
+            setTimeout(function() {
+                $spinner.remove();
+                if (msnry) {
+                    requestAnimationFrame(function() {
+                        msnry.layout();
+                    });
+                }
+            }, 300);
+        }
+
+        if ($img[0].complete && $img[0].naturalWidth > 0) {
+            handleLoaded();
+            return;
+        }
+
+        $img.one('load', handleLoaded);
+        
+        $img[0].onerror = function() {
+            if (loaded) return;
+            this.style.opacity = '0';
+            setTimeout(function() {
+                if (!loaded) {
+                    $img.attr('src', '');
+                    setTimeout(function() {
+                        $img.attr('src', src + '?r=' + Date.now());
+                    }, 50);
+                }
+            }, 5000);
+        };
+    }
+ 
+    // ========== 7. 加载更多 ==========
+    function loadMore() {
+        if (isLoading) return;
+        if (currentIndex >= allImages.length) {
+            $btn.text('🎉 全部加载完成').prop('disabled', true);
+            return;
+        }
+
+        isLoading = true;
+        $btn.text('加载中...').prop('disabled', true);
+
+        const batch = allImages.slice(currentIndex, currentIndex + pageSize);
+        renderBatch(batch);
+        const $newItems = $grid.find('.gallery-item').slice(-batch.length);
+
+        if (msnry) {
+            msnry.appended($newItems.toArray());
+            msnry.layout();
+        }
+
+        $newItems.each(function() {
+            bindImageLoad($(this));
+        });
+
+        currentIndex += pageSize;
+
+        if (currentIndex >= allImages.length) {
+            $btn.text('🎉 全部加载完成').prop('disabled', true);
+        } else {
+            $btn.text('加载更多').prop('disabled', false);
+        }
+
+        isLoading = false;
+        // 🚫 删除了在此处重复解绑和绑定的 Fancybox 冗余代码
+    }
+
+    // ========== 8. 首屏加载 ==========
+    function initialLoad() {
+        const firstBatch = allImages.slice(0, pageSize);
+        renderBatch(firstBatch);
+        currentIndex = pageSize;
+
+        msnry = initMasonry();
+
+        const $items = $grid.find('.gallery-item');
+
+        $items.each(function() {
+            bindImageLoad($(this));
+        });
+
+        if (currentIndex >= allImages.length) {
+            $btn.text('🎉 全部加载完成').prop('disabled', true);
+        }
+        // 🚫 删除了在此处多余绑定的 Fancybox 代码
+    }
+
+    // ========== 9. 统一初始化 Fancybox ==========
+    function initFancybox() {
+        if (typeof Fancybox !== 'undefined') {
+            Fancybox.bind('[data-fancybox="gallery"]', {
+                hideScrollbar: false,
+                lockScroll: false,
+                touch: false,
+                Hash: false, //  防止修改 URL 触发浏览器后台重复校验
+                transitionDuration: 200,
+                Carousel: {
+                    Thumbs: false,
+                    Toolbar: {
+                        display: {
+                            left: [],
+                            middle: [],
+                            right: ['download'],
+                        },
+                    },
+                    Zoomable: {
+                    pinchToZoom: false,
+                    doubleTapToZoom: false,
+                        Panzoom: {
+                            maxScale: 'cover',
+                            panMode: 'mousemove',
+                            mouseMoveFactor: 1.1,
+                            friction: 0.9
+                        },
+                    },
+                },
+            });
+        }
+    }
+
+    // ========== 10. 按钮事件 ==========
+    $btn.on('click', loadMore);
+
+    // ========== 11. 响应式处理 ==========
+    let resizeTimer;
+    $(window).on('resize', function() {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        $grid.find('.gallery-item').css('transition', 'none');
+        if (msnry) msnry.layout();
+        resizeTimer = setTimeout(function() {
+            $grid.find('.gallery-item').css('transition', '');
+            if (msnry) msnry.layout();
+        }, 300);
+    });
+
+    // ========== 12. 启动 ==========
+    $(document).ready(function() {
+        initialLoad();
+        initFancybox(); //  在页面 DOM 加载完毕后，全局仅绑定一次
+    });
+
+})();
+</script>
+
+{{ end }}

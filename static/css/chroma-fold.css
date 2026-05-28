@@ -1,0 +1,157 @@
+/* ==========================================================================
+   代码高亮容器（全面升级：吸顶工具栏、智能主题色复制与折叠反馈）
+   ========================================================================== */
+
+/* 容器基础样式 */
+.highlight {
+    position: relative;
+    margin: 1.5em 0;
+    border-radius: 12px;
+    background: #1e1e1e; /* 统一高级深色背景 */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* 换用半透明微边框，暗黑/明亮模式下都更自然 */
+    overflow: hidden; /* 保证圆角剪裁 */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* 增加代码块沉降感浮雕阴影 */
+}
+
+/* 顶部工具栏 - 实现吸顶的关键 */
+.code-tools {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 38px; /* 略微加高，留白更舒适 */
+    padding: 0 16px;
+    background: rgba(30, 30, 30, 0.85); /* 降噪暗色吸顶背景 */
+    backdrop-filter: blur(12px); /* 强化代码滚动过去时的磨砂玻璃透光感 */
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 语言标签 */
+.code-lang-name {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1.5px; /* 加宽字间距，更具现代极简风 */
+    font-weight: 600;
+}
+
+/* 行号控制 */
+.code-line-num {
+    display: inline-block;
+    width: 2em;
+    margin-right: 1em;
+    text-align: right;
+    color: #5c6370; /* 调和行号颜色，防刺眼 */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   现代感复制按钮（适配全局主题色）
+   -------------------------------------------------------------------------- */
+.copy-btn {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent); /* 动态引入 12% 主题色微光背景 */
+    color: var(--color-accent); /* 文字继承主调色 */
+    border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent); /* 动态微光边框 */
+    border-radius: 6px;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.copy-btn:hover {
+    background: var(--color-accent); /* 悬浮反白 */
+    color: #fff !important;
+    border-color: var(--color-accent);
+    /* 高级细节：浮现一层对应主题色的环境呼吸光晕 */
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+.copy-btn:active {
+    transform: scale(0.95); /* 加入轻微的点击按压反馈 */
+}
+
+/* 代码区域 */
+.highlight pre {
+    margin: 0 !important;
+    padding: 18px !important; /* 稍微加足内边距 */
+    font-size: 14px;
+    line-height: 1.65;
+    overflow: auto;
+    max-height: 400px;
+    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* 升级更顺畅的代码伸缩曲线 */
+}
+
+/* 折叠控制：展开状态 */
+.highlight.expanded pre {
+    max-height: 2500px; /* 提高容纳上限 */
+}
+
+/* --------------------------------------------------------------------------
+   底部展开/收起遮罩按钮
+   -------------------------------------------------------------------------- */
+.fold-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px; /* 稍微加高遮罩过渡 */
+    background: linear-gradient(transparent, #1e1e1e 95%); /* 完美融入容器 `#1e1e1e` 本身 */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 12px;
+    z-index: 15;
+    cursor: pointer;
+}
+
+.highlight.expanded .fold-overlay {
+    position: relative; /* 展开后变为相对定位，放在代码最下方 */
+    background: transparent;
+    height: 45px;
+}
+
+.fold-text {
+    font-size: 12px;
+    color: #aaa;
+    background: #2a2a2a;
+    padding: 5px 18px;
+    border-radius: 20px;
+    border: 1px solid #444;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 悬浮展开按钮：文字变主色，边框变主色，并融入微量主色背景 */
+.highlight .fold-overlay:hover .fold-text {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 8%, #2a2a2a);
+    transform: translateY(-1px); /* 悬浮时微幅向上悬浮，更有暗示感 */
+}
+
+/* --------------------------------------------------------------------------
+   代码块专属现代极简滚动条美化
+   -------------------------------------------------------------------------- */
+.highlight pre::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+}
+.highlight pre::-webkit-scrollbar-thumb { 
+    background: rgba(255, 255, 255, 0.15); /* 默认半透明浅白，暗色背景下非常克制优雅 */
+    border-radius: 10px; 
+    transition: background 0.2s;
+}
+/* 鼠标移入滚动条轨道或滑块悬浮时，滑块变为主调色 */
+.highlight pre::-webkit-scrollbar-thumb:hover { 
+    background: var(--color-accent); 
+}

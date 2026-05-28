@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>动态管理 - Rakien</title>
+
+<!-- 引入 Fancybox -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.css" />
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.umd.js"></script>
+<!-- 引入 MusicPlayer -->
+<script src="/js/MusicPlayer.js"></script>
+<!-- 引入 页面css -->
+<link rel="stylesheet" href="/css/status-admin.css" />
+
+</head>
+<body style="margin-bottom: 160px;">
+    <div class="container">
+        <div class="publish-panel">
+        <div class="header-row" style="display: flex; align-items: center; justify-content: space-between;">
+            <h1>✏️ 动态发布</h1>
+            <a href="/status/" class="back-btn" target="_blank">← 返回动态</a>
+        </div>
+        <div class="subtitle">发布新的动态或管理现有内容</div>
+<div class="collapsible-section" id="configSection">
+<div class="collapsible-header" onclick="toggleSection('configSection')">
+    <span>⚙️ 配置</span>
+    <span style="display:flex;align-items:center;gap:8px;">
+        <span class="header-badge header-badge-green" id="configBadge" style="display:none;"></span>
+<span class="header-badge header-badge-green" id="imgHostBadge" style="display:none; "></span>
+        <span class="collapse-icon">▼</span>
+    </span>
+</div>
+    <div class="collapsible-body">
+        <div class="info" style="background:#e3f2fd;padding:12px;border-radius:12px;margin-bottom:20px;font-size:13px;">
+            🔐 Token 会保存在浏览器本地，不会上传到服务器。<br>
+            需要 GitHub Token（权限：gist），<a href="https://github.com/settings/tokens" target="_blank">点击获取</a>
+        </div>
+        <div class="form-group" style="background: ;">
+            <label>GitHub Token</label>
+            <input type="text" id="githubToken" placeholder="上面获取" style="margin-bottom:30px;background:#d6ffe4; border-color:#b8e3c6;">
+            
+            <label>Gist ID</label>
+            <input type="text" id="gistId" placeholder="打开自己的gist,找到那个文件,点开,链接里有" style="margin-bottom:30px;background:#d6ffe4; border-color:#b8e3c6;">
+
+            <label>文件名</label>
+            <input type="text" id="filename" placeholder="Gist 中的文件名" style="margin-bottom:30px;background:#d6ffe4; border-color:#b8e3c6;">
+
+            <label>图床 API Key</label>
+            <input type="text" id="apiKey" placeholder="输入s.ee的key(原sm.ms)" style="margin-bottom:30px;background:#d6ffe4; border-color:#b8e3c6;">
+            <button type="button" id="refreshConfigBtn" style="width:100%;padding:12px;background:#007aff;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;">🔄 确认配置并刷新</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================动态发布部分=================================================== -->
+<div class="collapsible-section collapsed" id="publishSection">
+    <div class="collapsible-header" onclick="toggleSection('publishSection')">
+        <span>📤 发布动态</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+            <span class="header-badge header-badge-yellow" id="draftBadge" style="display:none;">📝 有草稿</span>
+            <span class="collapse-icon">▼</span>
+        </span>
+    </div>
+    <div class="collapsible-body">
+        <div class="form-group">
+            <label>动态内容 *</label>
+            <textarea id="content" placeholder="今天发生了什么..." style="background:#fff8e1; border-color:#ffc107;"></textarea>
+<!-- ==============================加粗和斜体按钮=================================================== -->
+<div style="display:flex; gap:6px; margin: 8px 0;">
+    <button id="boldBtn" style="
+        display:inline-flex;
+        align-items:center;
+        gap:4px;
+        padding:13px 60px;
+        background:linear-gradient(135deg, #667eea, #764ba2);
+        color:#fff;
+        border:none;
+        border-radius:6px;
+        font-size:13px;
+        cursor:pointer;
+        transition:all 0.2s;
+        box-shadow:0 2px 4px rgba(102,126,234,0.3);
+    " onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 8px rgba(102,126,234,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(102,126,234,0.3)'">
+        <strong>B</strong> 加粗
+    </button>
+    <button id="italicBtn" style="
+        display:inline-flex;
+        align-items:center;
+        gap:4px;
+        padding:13px 60px;
+        background:linear-gradient(135deg, #f093fb, #f5576c);
+        color:#fff;
+        border:none;
+        border-radius:6px;
+        font-size:13px;
+        cursor:pointer;
+        transition:all 0.2s;
+        box-shadow:0 2px 4px rgba(245,87,108,0.3);
+        font-style:italic;
+    " onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 8px rgba(245,87,108,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(245,87,108,0.3)'">
+        <em>I</em> 斜体
+    </button>
+</div>
+<!-- ==============================加粗和斜体按钮=================================================== -->
+
+
+            <div id="contentPreview" style="
+                font-size: 17px;
+                color: #666;
+                margin-top: 8px;
+                padding: 8px 10px;
+                background: #f5f5f5;
+                border-radius: 6px;
+                border-left: 3px solid #ff9800;
+                word-wrap: break-word;
+                min-height:100px;
+            ">
+                <span id="previewText"></span>
+            </div>
+        </div>
+        <hr>
+        <div class="form-group">
+            <label style="color: #dc3545;">~图片链接（可选）~</label>
+            <textarea id="images" placeholder="图片链接,空格分开"></textarea>
+            <textarea id="images_markdown" placeholder="markdown语法转换区"></textarea>
+            
+            <!-- ========== 图片压缩选项面板（新增） ========== -->
+            <div class="compress-panel" style="background: #f8f9fa; border-radius: 12px; padding: 16px; margin: 12px 0; border: 1px solid #e0e0e0;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <span style="font-weight: 600; color: #333; font-size: 14px;">🗜️ 图片压缩设置</span>
+                    
+                    <!-- 质量选择 -->
+                    <div style="display: flex; gap: 4px; background: #fff; border-radius: 8px; padding: 4px; border: 1px solid #e0e0e0; flex-wrap: wrap;">
+                        <label class="quality-radio" style="display: flex; align-items: center; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 13px; color: #666; user-select: none;">
+                            <input type="radio" name="compressQuality" value="1.0" style="display: none;">
+                            <span>原画</span>
+                        </label>
+                        <label class="quality-radio" style="display: flex; align-items: center; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 13px; color: #666; user-select: none;">
+                            <input type="radio" name="compressQuality" value="0.95" style="display: none;" checked>
+                            <span>95%</span>
+                        </label>
+                        <label class="quality-radio" style="display: flex; align-items: center; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 13px; color: #666; user-select: none;">
+                            <input type="radio" name="compressQuality" value="0.9" style="display: none;">
+                            <span>90%</span>
+                        </label>
+                        <label class="quality-radio" style="display: flex; align-items: center; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 13px; color: #666; user-select: none;">
+                            <input type="radio" name="compressQuality" value="0.85" style="display: none;">
+                            <span>85%</span>
+                        </label>
+                        <label class="quality-radio" style="display: flex; align-items: center; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 13px; color: #666; user-select: none;">
+                            <input type="radio" name="compressQuality" value="0.8" style="display: none;">
+                            <span>80%</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 高级选项（非原画时显示） -->
+                <div id="compressAdvanced" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label style="font-size: 13px; color: #666; white-space: nowrap;">📦 小于此大小不压缩：</label>
+                        <input type="number" id="compressMinSize" value="450" min="0" step="10" 
+                               style="width: 80px; padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; text-align: center;">
+                        <span style="font-size: 12px; color: #999;">KB</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label style="font-size: 13px; color: #666; white-space: nowrap;">📐 超过此宽度等比缩放：</label>
+                        <input type="number" id="compressMaxWidth" value="1200" min="100" step="50" 
+                               style="width: 80px; padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; text-align: center;">
+                        <span style="font-size: 12px; color: #999;">px</span>
+                    </div>
+                </div>
+            </div>
+            <!-- ========== 图片压缩选项面板结束 ========== -->
+            
+            <div class="upload-area">
+                <input type="file" id="fileInput" accept="image/*" multiple class="file-input">
+            <div style="display:flex; gap:8px; margin: 8px 0;" style="margin-bottom:20px;">
+                <button id="imgMgrBtn" style="flex:1;padding:10px;background:linear-gradient(135deg,#bb80e8,#a680e8);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;">📁 图床管理</button>
+                <button id="pickImgBtn" style="flex:1;padding:10px;background:linear-gradient(135deg,#fabe66,#ff9800);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;">🖼️ 选择图片</button>
+                <button type="button" id="uploadBtn" class="upload-btn" >📤 上传图片</button>
+            </div>
+                
+                <span id="uploadProgress" class="upload-progress"></span>
+            </div>
+            <div id="imagePreview" class="image-preview"></div>
+            <small style="color:#666;">支持多图上传，点击预览图可放大，<span style="color: red;">点击红色X删除（同时删除图床源文件）</span>,<span style="color:#3dc408;">绿色X仅删除链接 </span></small>
+        </div>
+        <hr>
+        <div class="form-group">
+            <label>🎵 音乐链接（可选）</label>
+            <input type="text" id="musicInput" placeholder="网易云/QQ音乐/虾米链接" style="">
+            <small style="color:#666;">支持单曲和歌单</small>
+        </div>
+<hr>
+<div class="form-group">
+    <label>📍 发布地点</label>
+    <span style="color:#c4c4c4;">全球版, 市区级, 英文可以忽略大小写, 有经纬度可在地图显示坐标, 有模糊查询.</span>
+    <div style="display: flex; gap: 8px; margin-top:15px;">
+        <input type="text" id="location" placeholder="淄博市,东京,tokyo,佛罗里达州..." style="flex: 1; background:#fff8e1; border-color:#ffc107;">
+        <button type="button" id="getCoordsBtn" class="location-btn" style="margin-top:0; white-space: nowrap;">🔍 获取经纬度</button>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <input type="text" id="coordsDisplay" placeholder="经纬度 (Lat, Lon)" readonly style="flex: 1; background: #fff8e1; color: #666; border-color:#ffc107; font-size: 12px;">
+        <button type="button" id="clearLocation" class="location-btn" style="margin-top:0; background:#ffebee; color:#d32f2f;">❌ 清除</button>
+    </div>
+    <div class="device-hint" id="locationShortcuts">
+        🌍 常用地点：
+        <button type="button" class="location-btn" data-location="未知">未知</button>
+        <button type="button" class="location-btn" data-location="地球">地球</button>
+    </div>
+</div>
+<hr>
+        <div class="form-group">
+            <label>📱 发布设备</label>
+            <input type="text" id="device" placeholder="iPhone 12, MacBook Pro, 小米13..." style="background:#fff8e1; border-color:#ffc107;">
+            <div class="device-hint">
+                📱 常用设备：
+                <button type="button" class="device-btn" data-device="iPhone">iPhone</button>
+                <button type="button" class="device-btn" data-device="Android">Android</button>
+                <button type="button" class="device-btn" data-device="iPhone 12">iPhone 12</button>
+                <button type="button" class="device-btn" data-device="MacBook Pro">MacBook Pro</button>
+                <button type="button" class="device-btn" data-device="iPad Air">iPad Air</button>
+                <button type="button" class="device-btn" data-device="Linux">Linux</button>
+                <button type="button" class="device-btn" data-device="Windows PC">Windows PC</button>
+            </div>
+        </div>
+<hr>
+        <div class="form-group">
+            <label>📌 置顶权重</label>
+            <select id="pinnedSelect" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:16px;background:#fff8e1; border-color:#ffc107;">
+                <option value="0">0 - 不置顶</option>
+            </select>
+            <small style="color:#666;" id="pinnedHint"></small>
+        </div>
+        
+        <button id="publishBtn">📤 发布动态</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ================================ 管理区域（折叠） ================================== -->
+<div class="collapsible-section collapsed" id="manageSection">
+    <div class="collapsible-header" onclick="toggleSection('manageSection')">
+        <span>📋 动态管理</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+            <span class="header-badge header-badge-teal" id="countBadge" style="display:none;">0 条</span>
+            <span class="collapse-icon">▼</span>
+        </span>
+    </div>
+    <div class="collapsible-body">
+        <div class="manage-panel"><!-- 右侧开始 -->
+        <div class="filter-bar" id="filterBar" style="display: none;">
+            <div class="filter-group" id="locationGroup" style="display: none;">
+                <label style="font-size:13px;margin-bottom:6px;">📍 地区筛选</label>
+                <div class="filter-buttons" id="locationButtons"></div>
+            </div>
+            <hr>
+            <div class="filter-group">
+                <div class="filter-buttons" id="yearButtons"></div>
+            </div>
+            <hr>
+            <div class="filter-group" id="monthGroup" style="display: none;">
+                <div class="filter-buttons" id="monthButtons"></div>
+            </div>
+            <div class="filter-group">
+                <label style="font-size:13px;margin-bottom:6px;">🔍 搜索动态</label>
+                <input type="text" id="searchInput" placeholder="输入关键词搜索..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;">
+            </div>
+        </div>
+        
+        <div class="stats" id="statsInfo"></div>
+        <div class="pagination" id="pagination"></div>
+        <div class="status-list">
+            <div id="statusList">加载中...</div>
+        </div>
+        <div class="pagination" id="paginationBottom"></div>
+    </div>
+    </div>
+</div>
+    <!-- ✅ 批量操作栏放这里 -->
+<div class="batch-bar" id="batchBar">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;">
+        <span class="batch-info" id="batchInfo">已选 0 条</span>
+        <div class="select-actions">
+            <button class="select-btn" id="selectAllBtn">全选</button>
+            <button class="select-btn" id="invertBtn">反选</button>
+            <button class="batch-cancel-btn" id="batchCancelBtn">取消</button>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;">
+        <button class="batch-delete-btn" id="batchDeleteBtn">🗑 批量删除</button>
+        <button class="batch-reset-btn" id="batchResetPinnedBtn">📌 重置置顶</button>
+        <button class="batch-loc-btn" id="batchLocationBtn">📍 批量改地址</button>
+    </div>
+</div>
+<!-- 批量改地址弹窗 -->
+<div class="modal-overlay" id="batchLocationModal" style="display:none;">
+    <div class="modal-box">
+        <h3>📍 批量修改地址</h3>
+        <p style="font-size:13px;color:#666;margin-bottom:12px;" id="batchLocationCount"></p>
+        <div class="form-group">
+            <label>新地址（格式：省份 · 城市）</label>
+            <input type="text" id="batchLocationInput" placeholder="例如 山东省 · 淄博市">
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <input type="text" id="batchCoordsDisplay" placeholder="经纬度 (Lat, Lon)" readonly style="flex: 1; background: #f8f8f8; color: #666; font-size: 12px;">
+                <button type="button" id="batchGetCoords" class="location-btn" style="margin-top:0;">🔍 获取经纬度</button>
+                <button type="button" id="batchClearLocation" class="location-btn" style="margin-top:0; background:#ffebee; color:#d32f2f;">❌ 清除</button>
+            </div>
+            <div class="device-hint" style="margin-top: 6px;">
+                🌍 常用地点：
+                <button type="button" class="location-btn batch-loc-btn" data-loc="未知" data-coords="">未知</button>
+                <button type="button" class="location-btn batch-loc-btn" data-loc="地球" data-coords="">地球</button>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="cancel-btn" id="batchLocationCancel">取消</button>
+            <button class="save-btn" id="batchLocationSave">💾 批量修改</button>
+        </div>
+    </div>
+</div>
+    <div id="toast"></div>
+    </div>
+
+
+    <div class="modal-overlay" id="imagePickerModal" style="display:none;">
+    <div class="modal-box" style="max-width:95vw;width:700px;max-height:85vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 style="margin:0;">🖼️ 选择图床图片</h3>
+                <button type="button" id="imgPickerClose" style="width:28px;height:28px;border-radius:50%;border:none;background:transparent;cursor:pointer;font-size:18px;color:#999;">✕</button>
+        </div>
+        <div id="imgPickerStatus" style="text-align:center;padding:20px;color:#999;">⏳ 加载中...</div>
+        <div id="imgPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;overflow-y:auto;max-height:55vh;padding:4px;max-width:100%;"></div>
+        <div id="imgPickerActions" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #eee;flex-wrap:wrap;gap:8px;">
+            <span id="imgPickCount" style="font-weight:600;color:#333;">已选 0 张</span>
+            <div style="display:flex;gap:8px;">
+                <button id="imgPickCancel" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;color:#333;">取消</button>
+                <button id="imgPickConfirm" style="padding:8px 16px;border:none;border-radius:6px;background:#43a047;color:#fff;cursor:pointer;font-weight:600;">确认添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script src="/js/status/status-admin.js"></script>
+</body>
+</html>

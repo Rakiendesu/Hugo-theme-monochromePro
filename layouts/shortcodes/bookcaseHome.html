@@ -1,0 +1,90 @@
+{{ $section_name := .Get "section" }}
+{{ $limit := .Get "limit" | default 0 | int }}
+
+{{ $section := .Site.GetPage $section_name }}
+{{ if not $section }}
+  {{ errorf "bookcase resource not found" }}
+{{ end }}
+
+{{ if ne $section.Kind "section" }}
+  {{ errorf "bookcase resource must be a section" }}
+{{ end }}
+
+{{ $list_sections := $section.Params.bookcase_list_sections | default true }}
+{{ $list_pages := $section.Params.bookcase_list_pages | default true }}
+
+{{ $pages := default nil }}
+{{ if and $list_sections $list_pages }}
+    {{ $pages = $section.Pages }}
+{{ else if $list_sections }}
+    {{ $pages = $section.Sections }}
+{{ else if $list_pages }}
+    {{ $pages = $section.RegularPages }}
+{{ end }}
+
+{{ if gt $limit 0 }}
+    {{ $pages = first $limit $pages }}
+{{ end }}
+
+<div>
+    <div class="bookcase-layout" >
+        {{ range $pages }}
+            {{ $hidden := .Params.bookcase_hidden | default false }}
+            {{ if not $hidden }}
+                {{- partial "bookcase/item.html" . -}}
+            {{ end }}
+        {{ end }}
+    </div>
+    <div style="text-align: center; margin: 1rem 0rem 0rem 0; ">
+        <a href="{{ $section.RelPermalink }}" class="bookcase-view-all-btn">全部相册</a>
+    </div>
+</div>
+
+<style>
+
+
+
+/* ==========================================================================
+   书架 - 查看全部按钮（自动适配主题色）
+   ========================================================================== */
+.bookcase-view-all-btn {
+    display: inline-block;
+    padding: 10px 28px;
+    background: var(--color-background-card, #fcfcfc);
+    color: var(--color-text, #333);
+    border: 1px solid var(--color-border, #eee);
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    opacity: 0.5; 
+}
+
+.bookcase-view-all-btn:hover {
+    border-color: var(--color-accent); /* 替换为动态主题色边框 */
+    color: var(--color-accent);        /* 替换为动态主题色文字 */
+    opacity: 1; 
+    /* 高定细节：悬浮时融入 6% 的主题色微调背景，视觉更柔和高级 */
+    background: color-mix(in srgb, var(--color-accent) 6%, var(--color-background-card, #fcfcfc));
+}
+/* ==========================================================================
+   书架单项悬浮动效（追加）
+   ========================================================================== */
+/* 1. 基础平滑过渡准备 */
+.bookcase-item figure {
+    overflow: hidden; /* 核心：确保图片微微放大时不会溢出其容器边界 */
+    /* 如果你原本给 figure 绑了 border-radius 圆角，overflow: hidden 也能完美裁剪它 */
+}
+
+.bookcase-item img {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important; /* 极致丝滑的放大过渡 */
+}
+
+
+/* 2. 鼠标悬浮整卡时的动态触发 */
+.bookcase-item:hover img {
+    transform: scale(1.06); /* 图片微微放大 6%，可根据喜好微调 */
+}
+
+
+</style>

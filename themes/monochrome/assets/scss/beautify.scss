@@ -1,0 +1,205 @@
+// ========================================================
+// 0. 主题变量定义
+// ========================================================
+$theme-color: #ff9800; // 核心主题色
+$apple-radius: 12px;   
+
+// ========================================================
+// 1. 全局弥散光
+// ========================================================
+html {
+  transition: background-color 0.5s ease; 
+  &::before, &::after {
+    content: "";
+    position: fixed;
+    width: 65vw;
+    height: 65vw;
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(120px); 
+    pointer-events: none;
+    opacity: 0.12; 
+    transition: opacity 0.5s ease;
+  }
+  &::before {
+    top: -10%; left: -5%;
+    background: radial-gradient(circle, $theme-color 0%, transparent 70%); 
+  }
+  &::after {
+    bottom: -10%; right: -5%;
+    background: radial-gradient(circle, #ff5722 0%, transparent 70%); 
+  }
+}
+
+html[data-theme="dark"] {
+  &::before, &::after { opacity: 0.1; }
+}
+
+// ========================================================
+// 2. 导航栏 & 侧边栏：立体感毛玻璃核心
+// ========================================================
+header, #navbar, #search_menu, #sidebar {
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 16px;
+
+  [data-theme="dark"] & {
+    background-color: rgba(30, 30, 30, 0.7) !important;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+}
+
+// ========================================================
+// 3. 侧边栏专属样式修正 (#sidebar)
+// ========================================================
+#sidebar {
+  width: 260px; // 设定合理宽度
+  padding: 0 !important; // 覆盖内联样式或默认
+  overflow: hidden;
+
+  // 顶部头像区
+  .sidebar-profile {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    background: rgba(255,255,255,0.2); // 稍微区分下层级
+    
+    [data-theme="dark"] & {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+      background: rgba(0,0,0,0.1);
+    }
+
+    img {
+      border: 3px solid rgba(255,255,255,0.8) !important; // 加厚边框增加质感
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    }
+  }
+
+  // 菜单列表清理
+  ul {
+    list-style: none !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+    
+    a {
+      display: block;
+      padding: 0.8rem 1.2rem;
+      border-radius: 10px;
+      color: var(--color-text) !important;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 500;
+
+      &:hover {
+        background: rgba($theme-color, 0.1);
+        color: $theme-color !important;
+        transform: translateX(5px); // 悬浮向右轻微滑动
+      }
+    }
+  }
+}
+
+// ========================================================
+// 4. 内容容器 & 代码块
+// ========================================================
+.balloon-card-item-content {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.3) !important;
+  [data-theme="dark"] & {
+    background-color: rgba(40, 40, 40, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  }
+  article { background: transparent !important; }
+}
+
+article pre {
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  position: relative;
+  padding-top: 3.2rem !important; 
+  border-radius: 12px !important;
+  background-color: #1a1b26 !important; 
+  &::before {
+    content: ""; position: absolute; top: 1.1rem; left: 1.2rem;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: #ff5f56; box-shadow: 24px 0 0 #ffbd2e, 48px 0 0 #27c93f; z-index: 2;
+  }
+  &::after {
+    content: "Terminal"; position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
+    font-size: 0.75rem; color: rgba(255, 152, 0, 0.35); font-family: sans-serif;
+  }
+}
+
+// ========================================================
+// 5. 交互 & 滚动条
+// ========================================================
+.postcard-item, .balloon-item, .card, .bookcase-item {
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+  border: 1px solid transparent !important;
+  &:hover {
+    transform: translateY(-4px); 
+    box-shadow: 0 20px 40px rgba(255, 152, 0, 0.08), 0 0 20px rgba(255, 152, 0, 0.1); 
+    border-color: rgba(255, 152, 0, 0.3) !important; 
+  }
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 152, 0, 0.2); border-radius: 10px;
+  &:hover { background: rgba(255, 152, 0, 0.5); }
+}
+
+// ========================================================
+// 6. 书架项目 (.bookcase-item)
+// ========================================================
+.bookcase-item {
+  position: relative;
+  border-radius: $apple-radius !important;
+  overflow: hidden;
+  background-color: var(--color-background-card) !important;
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+  border: 1px solid rgba(var(--color-text-rgb, 0, 0, 0), 0.05) !important; 
+  figure {
+    margin: 0; padding: 0; line-height: 0; overflow: hidden; position: relative;
+    border-radius: $apple-radius $apple-radius 0 0 !important;
+    img {
+      width: 100%; height: auto; display: block;
+      transition: transform 0.6s ease;
+      border-radius: $apple-radius $apple-radius 0 0 !important;
+    }
+    &::after {
+      content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 30%;
+      background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+      pointer-events: none;
+    }
+  }
+  figcaption {
+    padding: 0.8rem 0.5rem; text-align: center;
+    background-color: var(--color-background-card);
+    a { font-weight: 600; color: var(--color-text); text-decoration: none; transition: color 0.3s ease; }
+  }
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(255, 152, 0, 0.15) !important;
+    border-color: rgba(255, 152, 0, 0.4) !important;
+    img { transform: scale(1.05); }
+    figcaption a { color: $theme-color; }
+  }
+}

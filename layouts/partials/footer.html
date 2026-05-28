@@ -1,0 +1,10 @@
+{{ with (.Scratch.Get "params").footer }}
+<footer>
+{{/* 页脚输出 */}}
+  </script>
+    <article>
+        {{- . | safeHTML -}}
+    </article>
+</footer>
+{{ end }}
+

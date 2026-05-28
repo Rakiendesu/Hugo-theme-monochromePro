@@ -1,0 +1,271 @@
+/**
+ * MusicPlayer - 音乐链接解析 & 数据获取工具
+ * 基于 MetingJS 源码二次开发
+ */
+class MusicPlayer {
+  constructor(apiUrl = 'https://api.i-meto.com/meting/api') {
+    this.apiUrl = apiUrl;
+    // 正则规则：直接取自 MetingJS 源码 _parse_link 方法
+    // 注意：规则顺序很重要，更具体的规则放前面，避免被宽泛规则提前匹配
+    this.patterns = [
+      // netease
+      [/music\.163\.com.*song.*id=(\d+)/, 'netease', 'song'],
+      [/music\.163\.com.*album.*id=(\d+)/, 'netease', 'album'],
+      [/music\.163\.com.*artist.*id=(\d+)/, 'netease', 'artist'],
+      [/music\.163\.com.*playlist.*id=(\d+)/, 'netease', 'playlist'],
+      // tencent - 注意：songDetail 规则必须放在 song 规则前面
+      [/y\.qq\.com.*songDetail\/(\w+)/, 'tencent', 'song'],
+      [/y\.qq\.com.*song\/(\w+)\.html/, 'tencent', 'song'],
+      [/y\.qq\.com.*album\/(\w+)\.html/, 'tencent', 'album'],
+      [/y\.qq\.com.*singer\/(\w+)\.html/, 'tencent', 'artist'],
+      [/y\.qq\.com.*playsquare\/(\w+)\.html/, 'tencent', 'playlist'],
+      [/y\.qq\.com.*playlist\/(\w+)\.html/, 'tencent', 'playlist'],
+      // xiami
+      [/xiami\.com.*song\/(\w+)/, 'xiami', 'song'],
+      [/xiami\.com.*album\/(\w+)/, 'xiami', 'album'],
+      [/xiami\.com.*artist\/(\w+)/, 'xiami', 'artist'],
+      [/xiami\.com.*collect\/(\w+)/, 'xiami', 'playlist'],
+    ];
+  }
+
+  /**
+   * 1. 链接解析 —— 直接复刻 MetingJS 的 _parse_link 逻辑
+   * @param {string} link - 音乐链接
+   * @returns {{ server: string, type: string, id: string } | null}
+   */
+  parseLink(link) {
+    for (let [regex, server, type] of this.patterns) {
+      const match = link.match(regex);
+      if (match) {
+        return { server, type, id: match[1] };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 2. 请求 API 获取数据
+   * @param {string} server - netease/tencent/xiami
+   * @param {string} type   - song/playlist/album
+   * @param {string} id     - 歌曲/专辑/歌单 ID
+   * @returns {Promise<Array>} 直接返回格式化后的歌曲数组
+   */
+  async fetchData(server, type, id) {
+    const url = `${this.apiUrl}?server=${server}&type=${type}&id=${id}&r=${Math.random()}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`API 请求失败: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    return this.formatSongs(data, server, type);
+  }
+
+  /**
+   * 3. 数据格式化 —— 参考 MetingJS 的 _loadPlayer 逻辑
+   * 统一输出：{ name, artist, url, cover, lrc }
+   * 支持 song/playlist/album 三种 type
+   */
+formatSongs(rawData, server, type) {
+    const supportedTypes = ['song', 'playlist', 'album'];
+    if (!supportedTypes.includes(type)) {
+        console.warn(`不支持的 type: ${type}，仅支持 song/playlist/album`);
+        return [];
+    }
+    
+    // 单曲
+    if (type === 'song') {
+        // 修复：如果 API 返回的是数组，取第一个元素
+        const songData = Array.isArray(rawData) ? rawData[0] : rawData;
+        return [this.formatSingleSong(songData)];
+    }
+    // 歌单、专辑：多首歌曲
+    if (type === 'playlist' || type === 'album') {
+        if (!Array.isArray(rawData)) {
+            console.warn('歌单/专辑数据格式异常，期望数组');
+            return [];
+        }
+        return rawData.map(item => this.formatSingleSong(item));
+    }
+    return [];
+}
+
+  /**
+   * 格式化单首歌曲
+   * 兼容 MetingJS 常用的字段名
+   */
+  formatSingleSong(item) {
+    return {
+      name: item.title || item.name || '未知歌曲',
+      artist: item.author || item.artist || '未知艺术家',
+      url: item.url || '',
+      cover: item.pic || item.cover || '',
+      lrc: item.lrc || item.lyric || '',
+    };
+  }
+
+  /**
+   * 4. 一键加载 —— 你只需要传入链接，内部自动解析+请求+格式化
+   * @param {string} link - 音乐链接
+   * @returns {Promise<Array>} 格式化后的歌曲数组
+   */
+  async load(link) {
+    const info = this.parseLink(link);
+    if (!info) throw new Error('无法识别的音乐链接');
+    return await this.fetchData(info.server, info.type, info.id);
+  }
+}
+
+
+
+
+
+
+调用方法:
+// 1. 创建实例（可自定义 API 地址）
+const player = new MusicPlayer();
+
+// 2. 一键加载（你只需要给链接！）
+player.load('https://music.163.com/#/playlist?id=60198')
+  .then(songs => {
+    console.log('格式化后的歌曲列表:', songs);
+    // songs 就是你想要的 { name, artist, url, cover, lrc } 数组
+    // 之后你想渲染卡片 UI、存起来、或者 new APlayer 都行
+  })
+  .catch(err => console.error('加载失败:', err));
+
+
+
+
+
+
+
+
+
+
+方法	参数	返回值	说明
+load(link)	音乐链接字符串	Promise<Array>	最常用，一键完成：解析→请求→格式化
+parseLink(link)	音乐链接字符串	{server, type, id} 或 null	单独解析链接，提取平台/类型/ID
+fetchData(server, type, id)	三个字符串参数	Promise<Array>	请求 API 并返回格式化后的歌曲数组
+formatSongs(rawData, server, type)	API原始数据 + 标识参数	Array	将 API 返回的原始 JSON 格式化为标准歌曲对象
+formatSingleSong(item)	单个歌曲原始对象	{name, artist, url, cover, lrc}	格式化单首歌曲（内部方法，但你也可以外用）
+
+-------------------------------------------
+🔧 三种典型使用场景
+
+-------------------------------------------
+场景一：最简单用法（推荐）
+
+const player = new MusicPlayer();
+player.load('https://music.163.com/#/playlist?id=3049396377')
+  .then(songs => {
+    // songs 就是格式化好的数组，直接拿来渲染UI或创建 APlayer
+  });
+
+-------------------------------------------
+
+场景二：需要知道解析结果时
+
+const info = player.parseLink('你的链接');
+if (info) {
+  console.log(`平台：${info.server}，类型：${info.type}，ID：${info.id}`);
+}
+-------------------------------------------
+
+场景三：自定义 API 地址时
+
+// 如果你有自己的 Meting API 服务
+const player = new MusicPlayer('https://your-api.com/meting');
+
+--------------------------------------------------------------------------------------
+
+获取歌曲信息的标准写法
+javascript
+const player = new MusicPlayer();
+
+// 只需要三要素：平台、类型、ID
+const info = player.parseLink('https://music.163.com/#/playlist?id=3049396377');
+console.log(info); // { server: 'netease', type: 'playlist', id: '3049396377' }
+
+// 要拿到真正的歌曲数据，必须用 load() 或 fetchData()
+player.load('https://music.163.com/#/playlist?id=3049396377').then(songs => {
+    songs.forEach(song => {
+        console.log('歌名：', song.name);
+        console.log('歌手：', song.artist);
+        console.log('封面：', song.cover);
+        console.log('音频：', song.url);
+        console.log('歌词：', song.lrc);
+    });
+});
+--------------------------------------------------------------------------------------
+
+测试:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MusicPlayer 测试 - QQ音乐</title>
+    <!-- require APlayer -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+    <script type="text/javascript" src="music.tools.js"></script>
+</head>
+<body>
+
+    <h2>测试QQ音乐单曲：https://y.qq.com/n/ryqq_v2/songDetail/003w2xz20QlUZt</h2>
+    <button id="test-btn">点击加载并播放</button>
+    <div id="player-container"></div>
+
+<script>
+    document.getElementById('test-btn').addEventListener('click', async () => {
+        const player = new MusicPlayer();
+        const link = 'https://y.qq.com/n/ryqq_v2/songDetail/003EfNI04Pfb6B';
+        
+        // 第1步：测试解析
+        const info = player.parseLink(link);
+        console.log('1. 解析结果：', info);
+        
+        // 第2步：测试 API 请求（不经过格式化）
+        try {
+            const apiUrl = `https://api.i-meto.com/meting/api?server=${info.server}&type=${info.type}&id=${info.id}&r=${Math.random()}`;
+            console.log('2. API 链接：', apiUrl);
+            
+            const response = await fetch(apiUrl);
+            const rawData = await response.json();
+            console.log('3. API 原始返回：', rawData);
+            
+            // 第3步：测试格式化
+            const songs = player.formatSongs(rawData, info.server, info.type);
+            console.log('4. 格式化后：', songs);
+            
+            if (songs.length > 0) {
+                new APlayer({
+                    container: document.getElementById('player-container'),
+                    audio: songs.map(song => ({
+                        name: song.name,
+                        artist: song.artist,
+                        url: song.url,
+                        cover: song.cover,
+                        lrc: song.lrc
+                    })),
+                    autoplay: false
+                });
+                document.getElementById('test-btn').disabled = true;
+                document.getElementById('test-btn').textContent = '加载完成';
+            } else {
+                console.error('格式化后数据为空，请检查 formatSongs 方法');
+            }
+        } catch (err) {
+            console.error('请求失败：', err);
+        }
+    });
+</script>
+</body>
+</html>
+
+
+
+
+
+

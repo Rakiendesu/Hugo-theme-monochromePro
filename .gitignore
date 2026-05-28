@@ -1,0 +1,6 @@
+/public/
+.DS_Store
+
+# Ignore generated assets
+resources/_gen/
+/.claude/

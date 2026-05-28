@@ -1,0 +1,507 @@
+{{- define "content" -}}
+
+{{/* 1. 居中显示文章标题 */}}
+<h1 class="post-title" style="text-align: center; margin-bottom: 1.5rem;">{{ .Title }}</h1>
+
+{{/* 2. 文章元信息（作者、日期、字数等） */}}
+{{ partial "post-meta.html" . }}
+
+{{/* 3. 渲染目录（TOC） */}}
+{{ if and (ne .TableOfContents "<nav id=\"TableOfContents\"></nav>") (.Scratch.Get "params").enable_toc }}
+    {{ $enable_collapsible_toc := (.Scratch.Get "params").enable_collapsible_toc }}
+    {{ partial "collapsible-menu.html" (dict "type" "toc" "context" . "enable" $enable_collapsible_toc) }}
+{{ end }}
+
+{{/* 4. 文章正文 */}}
+{{ if .Content }}
+    <div class="content-margin" >
+        {{- partial "content.html" (dict "ctx" . "content" .Content) -}}
+    </div>
+{{ end }}
+
+{{/* 5. 文章标签 */}}
+{{ with .Params.tags }}
+    <div class="post-tags" style="margin: 2rem 0; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        {{ range . }}
+            <a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}" 
+               class="tag" 
+               style="display: inline-block; 
+                      padding: 0.25rem 0.75rem; 
+                      background-color: #f0f0f0; 
+                      border-radius: 1rem; 
+                      color: #333; 
+                      text-decoration: none;
+                      font-size: 0.9rem;
+                      transition: background-color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#e0e0e0'" 
+                        onmouseout="this.style.backgroundColor='#f0f0f0'"
+              >
+                #{{ . }}
+            </a>
+        {{ end }}
+    </div>
+{{ end }}
+
+{{/* 评论系统 */}}
+{{ $globalEnable := .Site.Params.comments.enable | default false }}
+{{ $articleEnable := .Params.comments | default true }}
+{{ if and $globalEnable $articleEnable }}
+<hr>
+    {{/* Twikoo 评论系统 */}}
+    {{ $twikooEnable := and (.Site.Params.twikoo.enable | default false) (.Params.twikoo | default true) }}
+    {{ if $twikooEnable }}
+        <div id="tcomment"></div>
+        {{ with .Site.Params.twikoo.cdn }}
+            <script src="{{ . }}"></script>
+        {{ end }}
+        <script>
+            twikoo.init({
+                envId: '{{ .Site.Params.twikoo.envId }}',
+                el: '{{ .Site.Params.twikoo.el }}',
+                region: '{{ .Site.Params.twikoo.region }}',
+                path: '{{ .Params.twikoo_path | default .Site.Params.twikoo.path }}'
+            })
+        </script>
+    {{ end }}
+
+    {{/* Artalk 评论系统 */}}
+    {{ $artalkEnable := and (.Site.Params.artalk.enable | default false) (.Params.artalk | default true) }}
+    {{ if $artalkEnable }}
+        <div id="artalkComments"></div>
+        {{ with .Site.Params.artalk.cdn }}
+            <script src="{{ . }}"></script>
+        {{ end }}
+        <script>
+            const my_artalk = Artalk.init({
+                el: '{{ .Site.Params.artalk.el }}',
+                pageKey: '{{ .Site.Params.artalk.pageKey }}',
+                pageTitle: '{{ .Site.Params.artalk.pageTitle }}',
+                server: '{{ .Site.Params.artalk.server }}',
+                site: '{{ .Site.Params.artalk.site }}',
+                darkMode: 'auto'
+            })
+
+{{/* Artalk添加黑白模式监听 */}}
+    if (!('theme' in localStorage)) {
+            {{ $color_scheme := (.Scratch.Get "params").color_scheme -}}
+            {{- if eq $color_scheme "light" -}}
+               my_artalk.setDarkMode(false);
+            {{- else if eq $color_scheme "dark" -}}
+               my_artalk.setDarkMode(true);
+            {{- end }}
+        }
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            my_artalk.setDarkMode(true);
+        } else {
+            my_artalk.setDarkMode(false);
+        }
+
+
+            window.addEventListener("DOMContentLoaded", function () {
+    const dark_mode_btn = document.getElementById("dark_mode_btn");
+    const light_mode_btn = document.getElementById("light_mode_btn");
+
+      dark_mode_btn.addEventListener('click', function () {
+        document.documentElement.setAttribute("data-theme", "dark");
+        my_artalk.setDarkMode(true);
+    });
+
+    light_mode_btn.addEventListener('click', function () {
+        document.documentElement.setAttribute("data-theme", "light");
+        my_artalk.setDarkMode(false);
+    });
+});          
+        </script>
+    {{ end }}
+{{ end }}
+
+
+{{/* ~~~~~~~~~~~文章完整排版与图片样式~~~~~~~~~~~~~~ */}}
+<style>
+/* =========================================
+   1. 文章图片加载动画 (骨架屏 Shimmer)
+   ========================================= */
+.content-margin p:has(img),
+.content-margin figure {
+    position: relative;
+}
+
+.content-margin img {
+    transition: opacity 0.3s ease;
+}
+
+.content-margin img:not(.img-loaded) {
+    background: var(--color-background-overlay, #e8e8e8);
+    position: relative;
+}
+
+.img-loading-wrapper {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    background: var(--color-background-overlay, #e8e8e8);
+    line-height: 0;
+}
+
+.img-loading-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 100%);
+    z-index: 1;
+    animation: article-shimmer 1.5s infinite;
+    pointer-events: none;
+}
+
+.img-loading-wrapper.loaded::after {
+    animation: none;
+    opacity: 0;
+}
+
+.img-loading-wrapper img {
+    display: block;
+    position: relative;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.img-loading-wrapper.loaded img {
+    opacity: 1;
+}
+
+@keyframes article-shimmer {
+    100% {
+        left: 100%;
+    }
+}
+
+/* =========================================
+   2. 文章基础文本与排版样式
+   ========================================= */
+.content-margin {
+  /* =========================================
+     [核心自动化配置] 自动读取 Hugo 配置文件中的 primaryColor 
+     ========================================= */
+  --color-accent: {{ .Site.Params.primaryColor | default "#2e6cd9" }};       /* 主强调色（直接读取后台配置） */
+  --color-accent-text: {{ .Site.Params.primaryColor | default "#2e6cd9" }};  /* 强调色文本 */
+
+  line-height: 1.85;
+  font-size: 1.05rem;
+  color: var(--color-text);
+}
+.content-margin > *:first-child { margin-top: 0; }
+.content-margin > *:last-child  { margin-bottom: 0; }
+
+/* 标题样式 */
+.content-margin article h1 {
+  font-size: 1.75rem; font-weight: 700;
+  margin: 2.5rem 0 1rem; padding-bottom: .5rem;
+  border-bottom: 2px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+  line-height: 1.4; transition: border-color .3s;
+}
+.content-margin article h1:hover { border-bottom-color: var(--color-accent); }
+
+.content-margin article h2 {
+  font-size: 1.4rem; font-weight: 600;
+  margin: 2rem 0 .75rem; line-height: 1.4;
+}
+.content-margin article h2::before {
+  content: "# "; color: color-mix(in srgb, var(--color-accent) 50%, transparent); transition: color .3s;
+}
+.content-margin article h2:hover::before { color: var(--color-accent); }
+
+.content-margin article h3 {
+  font-size: 1.2rem; font-weight: 600;
+  margin: 1.75rem 0 .6rem; line-height: 1.45; transition: color .3s;
+}
+.content-margin article h3:hover { color: var(--color-accent); }
+
+.content-margin article h4, h5, h6 {
+  font-weight: 600; margin: 1.5rem 0 .5rem; line-height: 1.5;
+}
+
+/* 段落与基础元素 */
+.content-margin p { margin: .75rem 0; overflow-wrap: break-word; }
+
+.content-margin hr {
+  margin: 2rem 0; border: none; height: 1px;
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--color-accent) 30%, transparent), transparent);
+}
+
+.content-margin code {
+  border-radius: .25rem; padding: .15rem .4rem;
+  background-color: var(--color-background-inline-code);
+  color: var(--color-accent-text); font-size: .9em;
+}
+
+.content-margin pre {
+  margin: 1.25rem 0; padding: 1rem 1.25rem; overflow-x: auto;
+  border-radius: .5rem; background-color: #272822; color: #f7f7f7;
+  border-left: 3px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+.content-margin pre code {
+  display: inherit; border-radius: 0; padding: 0;
+  background-color: transparent; color: inherit;
+}
+
+.content-margin blockquote {
+  padding: .75rem 1rem; margin: 1.25rem 0;
+  border-left: 3px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+  background: var(--color-background-hover);
+  border-radius: 0 .5rem .5rem 0; color: var(--color-text-secondary);
+}
+.content-margin blockquote p:first-child { margin-top: 0; }
+.content-margin blockquote p:last-child  { margin-bottom: 0; }
+
+/* 链接样式 */
+.content-margin article a {
+  color: var(--color-accent-text);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  transition: border-color .25s, color .25s;
+}
+.content-margin article a:hover {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.content-margin article a[href^="mailto:"] {
+  color: #c4a80c;
+  border-bottom-style: dashed;
+}
+
+/* =========================================
+   3. 图片布局 (响应式 + 智能网格)
+   ========================================= */
+.content-margin .img-loading-wrapper {
+  display: block;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--color-background-overlay, #f5f5f5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.content-margin img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+/* --- 场景 A：单张图片 (居中自适应，长图防霸屏，去除左右白边) --- */
+.content-margin p:not(:has(a[data-fancybox]:nth-child(2))):has(a[data-fancybox]) {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+  padding: 0 2%;
+}
+.content-margin p:not(:has(a[data-fancybox]:nth-child(2))):has(a[data-fancybox]) a {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 850px;
+}
+.content-margin p:not(:has(a[data-fancybox]:nth-child(2))):has(a[data-fancybox]) .img-loading-wrapper {
+  width: fit-content; 
+  max-width: 100%;
+}
+.content-margin p:not(:has(a[data-fancybox]:nth-child(2))):has(a[data-fancybox]) img {
+  width: auto;  
+  height: auto; 
+  max-width: 100%;
+  max-height: 75vh;
+  object-fit: contain; 
+}
+
+/* --- 场景 B：多张图片 (智能网格排版) --- */
+.content-margin p:has(a[data-fancybox]:nth-child(2)) {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 0 2%;
+}
+.content-margin p:has(a[data-fancybox]:nth-child(2)) .img-loading-wrapper {
+  aspect-ratio: 4 / 3; 
+}
+.content-margin p:has(a[data-fancybox]:nth-child(2)) img {
+  object-fit: cover; 
+}
+.content-margin p:has(a[data-fancybox]:nth-child(2)) a:hover img {
+  transform: scale(1.03); 
+}
+
+/* 2张图：左右平分 */
+.content-margin p:has(a[data-fancybox]:nth-child(2)):not(:has(a[data-fancybox]:nth-child(3))) {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 3张图：上1大，下2小 */
+.content-margin p:has(a[data-fancybox]:nth-child(3)):not(:has(a[data-fancybox]:nth-child(4))) {
+  grid-template-columns: repeat(2, 1fr);
+}
+.content-margin p:has(a[data-fancybox]:nth-child(3)):not(:has(a[data-fancybox]:nth-child(4))) a:first-child {
+  grid-column: 1 / -1;
+}
+.content-margin p:has(a[data-fancybox]:nth-child(3)):not(:has(a[data-fancybox]:nth-child(4))) a:first-child .img-loading-wrapper {
+  aspect-ratio: 21 / 9;
+}
+
+/* 4张及以上：自动流式网格 */
+.content-margin p:has(a[data-fancybox]:nth-child(4)) {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+/* 移动端专属优化 (Max-width: 768px) */
+@media (max-width: 768px) {
+  .content-margin p:not(:has(a[data-fancybox]:nth-child(2))):has(a[data-fancybox]) img {
+    max-height: 60vh;
+  }
+  .content-margin p:has(a[data-fancybox]:nth-child(4)) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =========================================
+   4. 列表样式 (无序、有序、嵌套)
+   ========================================= */
+.content-margin article ul,
+.content-margin article ol {
+    margin: .75rem 0;
+    padding-left: 1.5rem;
+}
+
+.content-margin article ul li {
+    list-style-type: none;
+    position: relative;
+    padding-left: 1.2rem;
+}
+.content-margin article ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .65em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+    transition: background .3s, transform .2s;
+}
+.content-margin article ul li:hover::before {
+    background: var(--color-accent);
+    transform: scale(1.5);
+}
+
+.content-margin article ol {
+    counter-reset: item;
+}
+.content-margin article ol li {
+    list-style-type: none;
+    position: relative;
+    padding-left: 1.5rem;
+}
+.content-margin article ol li::before {
+    counter-increment: item;
+    content: counter(item);
+    position: absolute;
+    left: 0;
+    top: .15rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    color: var(--color-accent-text);
+    font-size: .75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .3s, color .3s;
+}
+.content-margin article ol li:hover::before {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+/* 嵌套列表 */
+.content-margin article ul ul li::before,
+.content-margin article ul ol li::before {
+    width: 5px;
+    height: 5px;
+    background: transparent;
+    border: 1.5px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+.content-margin article ul ul li:hover::before,
+.content-margin article ul ol li:hover::before {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+</style>
+
+{{/* ~~~~~~~~~~~灯箱初始化：只作用于文章页面~~~~~~~~~~~~~~ */}}
+{{ if site.Params.fancybox.enable }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('#content img').forEach(img => {
+      if (!img.closest('a')) {
+        const wrapper = document.createElement('a');
+        wrapper.href = img.src;
+        wrapper.setAttribute('data-fancybox', 'gallery');
+        img.parentNode.insertBefore(wrapper, img);
+        wrapper.appendChild(img);
+      }
+    });
+    
+    document.querySelectorAll('.content-margin img').forEach(img => {
+      if (img.parentNode.classList.contains('img-loading-wrapper')) return;
+      
+      const parent = img.parentNode;
+      const loader = document.createElement('span');
+      loader.className = 'img-loading-wrapper';
+      
+      parent.insertBefore(loader, img);
+      loader.appendChild(img);
+      
+      let loaded = false;
+      const src = img.src;
+      
+      function markLoaded() {
+        if (loaded) return;
+        loaded = true;
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            loader.classList.add('loaded');
+          });
+        });
+      }
+      
+      if (img.complete && img.naturalWidth > 0) {
+        markLoaded();
+      } else {
+        img.addEventListener('load', markLoaded);
+        img.onerror = function() {
+          if (loaded) return;
+          this.style.opacity = '0';
+          setTimeout(function() {
+            if (!loaded) {
+              img.src = '';
+              setTimeout(function() {
+                img.src = src + '?r=' + Date.now();
+              }, 50);
+            }
+          }, 5000);
+        };
+      }
+    });
+  });
+</script>
+{{ end }}
+
+{{- end -}}

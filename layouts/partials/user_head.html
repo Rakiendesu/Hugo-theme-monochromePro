@@ -1,0 +1,240 @@
+<!-- 引入jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<!--  首页接入登录脚本 -->
+<script src="https://identity.netlify.app/v1/netlify-identity-widget.js"></script>
+<!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- 载入Artalk的css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/artalk/2.9.1/Artalk.css">
+<!-- Gallery 分页加载 JS -->
+<script src="/js/gallery-pagination.js"></script>
+<!-- MusicPlayer.js音乐数据获取 -->
+<script src="/js/MusicPlayer.js"></script>
+<!-- 禁止双击放大,禁止输入时自动放大 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<!--~~~~~~~~~~~~~~~ 优先加载基础字体（唯一预加载的 ZQL 字体） ~~~~~~~~~~~~~-->
+<link rel="preload" as="font" type="font/woff2" href="/fonts/zql-base.woff2" crossorigin="anonymous">
+<!-- 如果需要，也可以预加载完整字体，但建议不加 preload，让它自然下载 -->
+<!-- <link rel="preload" as="font" type="font/woff2" href="/fonts/zql.woff2" crossorigin="anonymous"> -->
+<!-- Monaco 预加载 -->
+<link rel="preload" as="font" type="font/woff" href="/fonts/monaco.woff" crossorigin="anonymous">
+<!--〜〜〜〜〜〜〜〜〜〜〜 优先加载基础字体（唯一预加载的 ZQL 字体） -~~~~~~~~~ -->
+
+<!-- og标签⬇️ -->
+<!-- Open Graph 基础标签 -->
+<meta property="og:title" content="{{ .Title }}" />
+<meta property="og:description" content="{{ if .IsPage }}{{ .Summary | plainify | truncate 120 }}{{ else }}{{ .Description | default .Site.Params.description }}{{ end }}" />
+<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}" />
+<meta property="og:url" content="{{ .Permalink }}" />
+<meta property="og:image" content="{{ .Params.ogImage.src | default .Site.Params.og_image | absURL }}" />
+<meta property="og:site_name" content="{{ .Site.Title }}" />
+
+<!-- 最小补充 -->
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="{{ default "zh_CN" .Site.LanguageCode }}" />
+
+<!-- ✅ 新增：Twitter 卡片兼容 -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ .Title }}" />
+<meta name="twitter:description" content="{{ if .IsPage }}{{ .Summary | plainify | truncate 120 }}{{ else }}{{ .Description | default .Site.Params.description }}{{ end }}" />
+<meta name="twitter:image" content="{{ .Params.ogImage.src | default .Site.Params.og_image | absURL }}" />
+<!-- og标签⬆️ -->
+
+{{ if .IsPage }}
+<meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}" />
+{{ end }}
+
+<!-- Chroma 代码折叠 -->
+<link rel="stylesheet" href="{{ "css/chroma-fold.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/chroma.css" | relURL }}">
+<script src="{{ "js/chroma-fold.js" | relURL }}" defer></script>
+
+
+{{/* 获取配置文件中的主色，如果没有则默认 #ff9800 */}}
+{{ $primary := .Site.Params.primaryColor | default "#ff9800" }}
+
+<style id="theme-variables">
+  :root {
+    /* 1. 基础主色：如果 $primary 已经拿到了主题色，我们以它为准 */
+    --primary-color: {{ $primary | default "#2e6cd9" }};
+
+    /* 2. 让 accent 变量直接无脑引用 primary-color，实现全局统一 */
+    --color-accent: var(--primary-color);
+    --color-accent-text: var(--primary-color);
+
+    /* 3. 暗色与半透明方案保持不变 */
+    --primary-dark: color-mix(in srgb, var(--primary-color), black 55%);
+    --primary-alpha-10: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    --primary-alpha-50: color-mix(in srgb, var(--primary-color) 50%, transparent);
+  }
+</style>
+
+{{ if eq .Kind "page" }}
+    <script>
+        // 等待DOM加载后检查TOC
+        document.addEventListener('DOMContentLoaded', function() {
+            const hasToc = !!document.getElementById('TableOfContents');
+            // 如果没TOC就不加载相关资源
+            if (hasToc) {
+                loadFloatingTOC();
+            }
+        });
+        
+        function loadFloatingTOC() {
+            // 这里可以动态加载CSS和JS
+        }
+    </script>
+    
+    <!-- 浮动TOC样式 -->
+    <!-- 浮动TOC脚本 -->
+<link rel="stylesheet" href="{{ "css/floating-toc.css" | relURL }}">
+<script src="{{ "js/floating-toc.js" | relURL }}" defer></script>
+{{ end }}
+
+<script>
+(function() {
+    // 等待 DOM 加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取当前小时
+        const hour = new Date().getHours();
+        const isDayTime = hour >= 6 && hour < 18;
+        const autoTheme = isDayTime ? 'light' : 'dark';
+        
+        // 检查 localStorage 是否有主题
+        let currentTheme = localStorage.getItem('theme');
+        
+        // 如果没有主题，应用自动主题
+        if (!currentTheme) {
+            document.documentElement.setAttribute('data-theme', autoTheme);
+            localStorage.setItem('theme', autoTheme);
+        }
+    });
+})();
+</script>
+
+
+
+  {{/* AOS 动画系统 */}}
+  {{ if site.Params.aos.enable }}
+  <script src="{{ site.Params.aos.js_url }}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // 动态添加 data-aos 属性
+      const selectors = [
+        // 文本内容
+        'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span',
+        'blockquote', 'pre', 'code', 'strong', 'em', 'b', 'i',
+        'mark', 'time',
+        
+        // 媒体
+        'img', 'iframe', 'video', 'audio', 'canvas', 'svg', 'path',
+        
+        // 列表表格
+       'ul', 'li', 'ol', 'table', 'tr', 'td', 'th',
+        
+        // 布局
+        'div', 'section', 'article', 'footer', 'aside', 'nav', 'figure', 'figcaption',
+        'details', 'summary',
+        
+        // 表单（可选）
+        'button', 'input', 'textarea', 'select',
+        
+        // 分隔线
+        'hr'
+      ].map(tag => `#content ${tag}`).join(', ');
+
+      document.querySelectorAll(selectors).forEach(el => {
+        el.setAttribute('data-aos', '{{ site.Params.aos.effect }}'); 
+      });
+
+      // 初始化 AOS
+      if (typeof AOS !== 'undefined') {
+        AOS.init({{ site.Params.aos.init | jsonify | safeJS }});
+      }
+      
+      window.addEventListener('load', () => {
+        AOS.refresh();
+      });
+    });
+  </script>
+  {{ end }}
+
+{{/* 7. 灯箱配置 */}}
+
+{{ if site.Params.fancybox.enable }}
+<link rel="stylesheet" href="{{ site.Params.fancybox.css_url }}">
+<script src="{{ site.Params.fancybox.js_url }}"></script>
+<script type="text/javascript">
+        if (typeof Fancybox !== "undefined") {
+      Fancybox.bind('[data-fancybox=\"gallery\"]', {
+        hideScrollbar: false,
+        lockScroll: false, 
+        touch: false,
+        Hash: false, 
+        transitionDuration: 200,
+        Carousel: {
+            Thumbs: false,
+            Toolbar: {
+                display: {
+                    left: [],
+                    middle: [],
+                    right: ["download"],
+                },
+            },
+            Zoomable: {
+                    pinchToZoom: false,
+                    doubleTapToZoom: false,
+                Panzoom: {
+                    maxScale: "cover",
+                    panMode: "mousemove",
+                    mouseMoveFactor: 1.1,
+                    friction: 0.9
+                },
+            },
+        },
+      });
+    }
+</script>
+{{/* 初始化脚本已移到 single.html 中 */}}
+{{ end }}
+
+{{/* 8. 配置链接新窗口打开*/}}
+<script>
+document.querySelectorAll('a[href^="http"]').forEach(a => {
+  if(a.href.indexOf(window.location.host) === -1) {
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer'); // 安全优化
+  }
+});
+</script>
+
+
+{{/* ------并在页尾加入这段脚本，这样你登录后会自动跳转到后台------  */}}
+<script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => {
+          document.location.href = "/admin/";
+        });
+      }
+    });
+  }
+</script>
+
+{{ if .Site.Params.google.enable }}
+<!-- 谷歌统计 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ .Site.Params.google.id }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{ .Site.Params.google.id }}');
+</script>
+{{ end }}
+
+<!-- umami统计 -->
+{{ if .Site.Params.umami.enable }}
+<script defer src="{{ .Site.Params.umami.src }}" data-website-id="{{ .Site.Params.umami.id }}"></script>
+{{ end }}

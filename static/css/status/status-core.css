@@ -1,0 +1,217 @@
+/* ==========================================================================
+   地图+动态区域 gpu加速
+   ========================================================================== */
+.status-container {
+    backface-visibility: hidden;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.status-list ,#status-map {
+    transform: translateZ(0);
+    perspective: 1000px;
+}
+
+/* ==========================================================================
+   页面容器 & 瀑布流网格
+   ========================================================================== */
+.status-list {
+    position: relative;
+    margin: 0 auto;
+}
+
+.grid-sizer,
+.status-item {
+    width: calc(33.333% - 14px);
+}
+
+.gutter-sizer {
+    width: 20px;
+}
+
+@media (min-width: 851px) and (max-width: 980px) {
+    .grid-sizer,
+    .status-item {
+        width: calc(50% - 10px);
+    }
+    .gutter-sizer {
+        width: 20px;
+    }
+}
+
+@media (max-width: 850px) {
+    .grid-sizer,
+    .status-item {
+        width: calc(50% - 10px);
+    }
+    .gutter-sizer {
+        width: 20px;
+    }
+}
+
+@media (max-width: 550px) {
+    .grid-sizer,
+    .status-item {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   卡片 定位 样式 闪烁
+   ========================================================================== */
+.status-anchor-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: #1099e8;
+    font-weight: 600;
+    margin-bottom: 8px;
+    background: rgba(34,144,209, 0.25);
+    padding: 3px 10px;
+    border-radius: 12px;
+    width: fit-content;
+    margin-left: 1px;
+}
+
+.status-flash {
+    animation: glowPulse 0.7s ease-in-out 3, cardBgFlash 0.7s ease-in-out 3;
+    border-radius: 16px;
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);
+    transition: box-shadow 0.4s ease-out, background-color 0.4s ease-out;
+}
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 15px 4px rgba(255, 152, 0, 0.5), 0 0 30px 8px rgba(255, 152, 0, 0.2); }
+    50%      { box-shadow: 0 0 8px 2px rgba(255, 152, 0, 0.2), 0 0 15px 4px rgba(255, 152, 0, 0.05); }
+}
+
+@keyframes cardBgFlash {
+    0%, 100% { background-color: rgba(255, 152, 0, 0.06); }
+    50%      { background-color: transparent; }
+}
+
+/* ==========================================================================
+   卡片内容：正文 / 图片 / meta
+   ========================================================================== */
+.meta-drawer {
+    margin-top: 10px;
+}
+
+.status-content {
+    font-size: 0.94rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    margin-bottom: 20px;
+    margin-top: 7px;
+    word-wrap: break-word;
+    opacity: 0.82;
+}
+
+.status-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+}
+
+.status-images a {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    background: var(--color-background-overlay, #e8e8e8);
+}
+
+.status-images a::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    z-index: 2;
+    animation: shimmer 1.5s infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmer {
+    100% { left: 100%; }
+}
+
+.status-images a.loaded::after {
+    animation: none;
+    opacity: 0;
+    display: none;
+}
+
+.status-images a img {
+    position: relative;
+    z-index: 1;
+    display: block;
+}
+
+.status-images a:last-child:nth-child(odd):not(:only-child) {
+    grid-column: 1 / -1;
+}
+
+.status-images a:last-child:nth-child(odd):not(:only-child) img {
+    aspect-ratio: 2 / 1;
+}
+
+.status-images a:only-child {
+    grid-column: 1 / -1;
+}
+
+.status-images a:only-child img {
+    aspect-ratio: 1 / 1;
+}
+
+.status-images img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: var(--color-background-overlay);
+    contain-intrinsic-size: auto 300px;
+}
+
+.status-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.6rem;
+    color: var(--color-text-secondary);
+    padding-top: 12px;
+    border-top: 1px solid rgba(128, 128, 128, 0.2);
+    opacity: 0.75;
+}
+
+/* ==========================================================================
+   加载更多按钮
+   ========================================================================== */
+.gallery-load-area {
+    text-align: center;
+    margin: 30px 0;
+    clear: both;
+}
+.gallery-load-btn {
+    background: none;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    padding: 12px 20px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    width: 100%;
+    height: 60px;
+    text-align: center;
+    box-sizing: border-box;
+}
+.gallery-load-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+.gallery-load-btn:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+}

@@ -1,0 +1,11 @@
+{{- $terms := .Get "terms" -}}
+{{- $sortby := .Get "sortby" -}}
+{{- $order := .Get "order" -}}
+{{- $title := .Get "title" -}}
+
+<div class="terms-cloud-section">
+    {{ if $title }}
+        <h2 class="terms-cloud-title">{{ $title | safeHTML }}</h2>
+    {{ end }}
+    {{- partial "terms-cloud.html" (dict "terms" (index .Site.Taxonomies $terms) "sortby" $sortby "order" $order) -}}
+</div>

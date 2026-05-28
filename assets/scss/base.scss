@@ -1,0 +1,157 @@
+/* 基础字体：小文件，立即使用 */
+@font-face {
+  font-family: 'ZQL-base';
+  src: url('/fonts/zql-base.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 完整字体：大文件，自然下载补充 */
+@font-face {
+  font-family: 'ZQL-full';
+  src: url('/fonts/zql.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Monaco 字体 */
+@font-face {
+  font-family: 'Monaco';
+  src: url('/fonts/monaco.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 实际使用的字体族：优先基础，完整字体自动补充缺失字符 */
+html, button, input, select, textarea,
+.pure-g [class *= "pure-u"] {
+  font-family: 'ZQL-base', 'ZQL-full', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+code, kbd, pre {
+  font-family: 'Monaco', ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+/* 主题切换动画 */
+html , .balloon-title-item , .balloon-card-item-content {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.5rem;
+  transition: width 0.3s ease-out, padding 0.3s ease-out;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @include font-bold;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  @include text-3xl;
+}
+
+h2 {
+  @include text-2xl;
+}
+
+h3 {
+  @include text-xl;
+}
+
+h4 {
+  @include text-lg;
+}
+
+h5 {
+  @include text-base;
+}
+
+h6 {
+  @include text-sm;
+}
+
+figure {
+  margin: 0;
+}
+
+img {
+  max-width: 100%;
+  border-radius: 3px;
+}
+
+input {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border: none;
+}
+
+mark {
+  background-color: var(--color-background-mark);
+  color: var(--color-text-mark);
+}
+
+details > summary {
+  cursor: pointer;
+}
+
+details[open] > summary {
+  cursor: pointer;
+}
+
+.content-margin {
+  @include my-8;
+}
+
+.hidden {
+  display: none;
+}
+
+@media screen and (min-width: $sm_min_width) {
+  body {
+    width: $sm_body_width;
+  }
+}
+
+@media screen and (min-width: $md_min_width) {
+  body {
+    width: $md_body_width;
+  }
+}
+
+@media screen and (min-width: $lg_min_width) {
+  body {
+    width: $lg_body_width;
+  }
+}
+
+@media screen and (min-width: $xl_min_width) {
+  body {
+    width: $xl_body_width;
+  }
+}
+
+@media screen and (min-width: $xxl_min_width) {
+  body {
+    width: $xxl_body_width;
+  }
+}
+
+// https://github.com/mathjax/MathJax/issues/3001
+.MJX_LiveRegion {
+  background-color: transparent !important;
+}
+
+.MJX_HoverRegion{
+  background-color: transparent !important;
+}
+
+.MJX_ToolTip{
+  background-color: transparent !important;
+}

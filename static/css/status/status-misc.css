@@ -1,0 +1,82 @@
+/* ==========================================================================
+   地图区域
+   ========================================================================== */
+#status-map {
+    height: 200px;
+    width: 100%;
+    border-radius: 16px;
+    margin: 22px 0px 22px 0px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 5;
+    border: 1px solid var(--color-border);
+}
+
+/* ==========================================================================
+   APlayer 悬浮播放器美化
+   ========================================================================== */
+.aplayer.aplayer-fixed .aplayer-body {
+    max-width: 500px;
+    border-radius: 12px 12px 0 0;
+    background: transparent !important;
+    padding-right: 0 !important;
+}
+.aplayer.aplayer-fixed .aplayer-miniswitcher { display: none !important; }
+.aplayer .aplayer-pic { border-radius: 50% !important; }
+
+/* ==========================================================================
+   右上角弹性通知传送带容器
+   ========================================================================== */
+#music-toast-container {
+    position: fixed;
+    top: 15px; right: 13px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.music-toast-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: var(--color-background-card, rgba(255, 255, 255, 0.9));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-right: 4px solid #ff9800;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    color: var(--color-text, #333333);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    max-height: 100px; 
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+    opacity: 0;
+    transform: translateY(20px);  
+}
+.music-toast-notice.active { opacity: 1; transform: translateY(0); }
+.music-toast-notice.fade-out {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.95);
+    max-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-top-width: 0 !important;
+    border-bottom-width: 0 !important;
+    border-color: transparent !important;
+    box-shadow: none !important; 
+}
+
+@media (max-width: 768px) {
+    .music-panel, .music-toast-notice, .music-panel-lrc {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: var(--color-background-card, rgba(255, 255, 255, 0.98)) !important;
+    }
+    .status-music-cover-wrap.playing-state .music-cover-img { filter: brightness(0.3) !important; }
+    .music-panel-lrc { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(255, 152, 0, 0.08) !important; }
+}

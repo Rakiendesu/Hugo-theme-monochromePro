@@ -1,0 +1,226 @@
+/* ==========================================================================
+   筛选栏组件（全面升级：智能主题色适配与果冻感交互）
+   ========================================================================== */
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0 20px 0;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.custom-select-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 120px;
+    user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   筛选触发小按钮
+   -------------------------------------------------------------------------- */
+.filter-toggle {
+    float: right;
+    width: 29px;
+    height: 29px;
+    border-radius: 50%;
+    background: var(--color-background-card);
+    border: 0.7px solid var(--color-border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease; /* 统一平滑过渡 */
+    margin-left: 3px;
+    opacity: 0.5;
+}
+
+/* 悬浮状态：边框变为主调色，融入 6% 主题色背景微光，图标同步染色 */
+.filter-toggle:hover {
+    opacity: 1;
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 6%, var(--color-background-hover));
+}
+
+.filter-toggle svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--color-text);
+    transition: fill 0.25s ease;
+}
+
+.filter-toggle:hover svg {
+    fill: var(--color-accent); /* 悬浮时图标一同染上主题色 */
+}
+
+/* --------------------------------------------------------------------------
+   筛选模态弹窗（同步搜索框：升级高级毛玻璃果冻遮罩）
+   -------------------------------------------------------------------------- */
+.filter-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* 升级：与全局搜索框一致的质感深色毛玻璃 */
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-modal.show {
+    display: flex;
+}
+
+.filter-modal-box {
+    background: var(--color-background-card);
+    border-radius: 16px;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    border: 1px solid var(--color-border);
+    /* 升级多层环境光阴影：保留你高级的右下角悬浮感，同时融入一丝微弱的主题色勾边 */
+    box-shadow: 10px 15px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px color-mix(in srgb, var(--color-accent) 5%, transparent);
+}
+
+.filter-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text);
+}
+
+/* 弹窗关闭按钮（同步搜索框：悬浮融入主题色淡染背景并优雅旋转） */
+.filter-modal-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.filter-modal-close:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    transform: rotate(90deg);
+}
+
+.filter-modal-close svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--color-text);
+    transition: fill 0.25s ease;
+}
+
+.filter-modal-close:hover svg {
+    fill: var(--color-accent);
+}
+
+/* --------------------------------------------------------------------------
+   下拉选择器外壳（Select Trigger）
+   -------------------------------------------------------------------------- */
+.select-trigger {
+    height: 40px;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background-color: var(--color-background-card);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* 悬浮时以及展开状态下：激活主题色外框 */
+.select-trigger:hover,
+.custom-select-wrapper.open .select-trigger {
+    border-color: var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 3%, var(--color-background-card));
+}
+
+/* 右侧小箭头美化 */
+.select-trigger::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--color-text-secondary, #888); /* 适配次要文字颜色 */
+    border-bottom: 2px solid var(--color-text-secondary, #888);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.3s ease, border-color 0.25s ease;
+    margin-left: 8px;
+}
+
+/* 悬浮或打开时，小箭头一同染上激活的主题色 */
+.select-trigger:hover::after,
+.custom-select-wrapper.open .select-trigger::after {
+    border-color: var(--color-accent);
+}
+
+.custom-select-wrapper.open .select-trigger::after {
+    transform: rotate(-135deg) translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   下拉选项菜单（Options Menu）
+   -------------------------------------------------------------------------- */
+.options-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background-color: var(--color-background-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    /* 多层细腻环境阴影 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px color-mix(in srgb, var(--color-accent) 4%, transparent);
+    z-index: 1000;
+    display: none;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.option-item {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--color-text);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 选项悬浮：融入 6% 全局主题色淡染背景，文字变换主题色，伴随 2px 右推进微动效 */
+.option-item:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, var(--color-background-hover));
+    color: var(--color-accent);
+    transform: translateX(2px);
+}
+
+.custom-select-wrapper.open .options-menu {
+    display: block;
+    animation: selectFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes selectFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

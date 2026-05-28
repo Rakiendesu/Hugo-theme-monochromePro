@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>图床文件列表</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5; padding: 20px; color: #333;
+        }
+        h1 { text-align: center; margin-bottom: 24px; font-size: 1.6rem; }
+        .controls {
+            display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; align-items: center;
+        }
+        .controls input {
+            padding: 14px 16px; border: 1px solid #ddd; border-radius: 10px;
+            width: 300px; font-size: 16px;
+        }
+        .controls button, .controls .upload-label {
+            padding: 14px 28px; background: #ff9800; color: #fff; border: none;
+            border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600;
+            min-height: 50px; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .controls .upload-label { background: #43a047; }
+        .controls .upload-label:hover { background: #388e3c; }
+        .controls button:hover { background: #e68900; }
+        .controls button:disabled { opacity: .5; cursor: not-allowed; }
+        .controls #fileInput { display: none; }
+
+        .upload-module {
+            display: none;
+            max-width: 1400px; margin: 0 auto 18px;
+            background: #fff; border-radius: 12px; padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+        .upload-module.show { display: block; }
+        .upload-module .compress-row {
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+        }
+        .upload-module .compress-row label {
+            font-size: 13px; color: #666; white-space: nowrap;
+        }
+        .upload-module .compress-row input[type="number"] {
+            width: 70px; padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px;
+            font-size: 13px; text-align: center;
+        }
+        .upload-module .quality-row {
+            display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; align-items: center;
+        }
+        .upload-module .quality-row span { font-size: 13px; color: #666; margin-right: 8px; font-weight: 600; }
+        .quality-radio {
+            display: flex; align-items: center; padding: 5px 12px; border-radius: 6px;
+            cursor: pointer; font-size: 13px; color: #666; user-select: none;
+            border: 1px solid transparent;
+        }
+        .quality-radio input { display: none; }
+        .quality-radio.active { background: #007aff; color: #fff; font-weight: 500; }
+
+        .stats { text-align: center; margin-bottom: 18px; color: #666; font-size: 15px; }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            max-width: 1400px; margin: 0 auto;
+        }
+        .card {
+            background: #fff; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,.06); transition: transform .2s;
+            display: flex; flex-direction: column;
+        }
+        .card:active { transform: scale(.97); }
+        .card img {
+            width: 100%; height: 180px; object-fit: cover; display: block; cursor: pointer;
+            background: #eee; opacity: 0; transition: opacity .3s;
+        }
+        .card img.loaded { opacity: 1; }
+        .card-info { padding: 10px 12px; font-size: 13px; color: #666; flex: 1; }
+        .card-info .name {
+            font-weight: 600; color: #333; white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; margin-bottom: 6px; font-size: 14px;
+        }
+        .card-info .meta { display: flex; justify-content: space-between; font-size: 12px; }
+        .card-actions { display: flex; flex-direction: column; gap: 6px; padding: 0 12px 12px; }
+        .card-actions .btn-row { display: flex; gap: 8px; }
+        .card-actions button {
+            flex: 1; padding: 10px 0; border: 1px solid #ddd; border-radius: 8px;
+            background: #fff; cursor: pointer; font-size: 13px; transition: all .2s;
+            min-height: 40px;
+        }
+        .copy-btn:hover { border-color: #2196f3; color: #2196f3; }
+        .md-btn {
+            width: 100%; border: 1px dashed #ff9800 !important;
+            color: #ff9800; font-weight: 600;
+        }
+        .md-btn:hover { background: #fff8e1 !important; border-color: #ff9800 !important; }
+        .del-btn:hover { border-color: #f44336; color: #f44336; }
+        .empty { text-align: center; padding: 60px; color: #999; grid-column: 1 / -1; font-size: 15px; }
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: #333; color: #fff; padding: 12px 24px; border-radius: 24px;
+            font-size: 15px; z-index: 99999; opacity: 0; transition: opacity .3s;
+        }
+        .toast.show { opacity: 1; }
+        #loadMoreBtn {
+            display: none; width: 100%; max-width: 1400px; margin: 18px auto 0;
+            padding: 16px; border: 1px solid #ddd; border-radius: 12px;
+            background: #f9f9f9; cursor: pointer; font-size: 15px; color: #333;
+            text-align: center;
+        }
+        #loadMoreBtn:hover { background: #eee; }
+        #loadMoreBtn:disabled { opacity: .5; cursor: not-allowed; }
+        #uploadProgress { text-align: center; color: #666; font-size: 14px; margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ 图床文件列表</h1>
+    <div class="controls">
+        <input type="text" id="apiKey" placeholder="输入 API Key" value="">
+        <button id="loadBtn">📂 加载文件</button>
+        <label class="upload-label" for="fileInput" style="display:none;">📤 上传图片</label>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+    </div>
+
+    <div class="upload-module" id="uploadModule">
+        <div class="quality-row">
+            <span>🗜️ 压缩质量：</span>
+            <label class="quality-radio"><input type="radio" name="compressQuality" value="1.0"><span>原画</span></label>
+            <label class="quality-radio"><input type="radio" name="compressQuality" value="0.95"><span>95%</span></label>
+            <label class="quality-radio"><input type="radio" name="compressQuality" value="0.9"><span>90%</span></label>
+            <label class="quality-radio"><input type="radio" name="compressQuality" value="0.85"><span>85%</span></label>
+            <label class="quality-radio active"><input type="radio" name="compressQuality" value="0.8" checked><span>80%</span></label>
+        </div>
+        <div class="compress-row">
+            <label>📦 小于此大小不压缩：</label>
+            <input type="number" id="compressMinSize" value="450" min="0" step="10">
+            <span style="font-size:12px;color:#999;">KB</span>
+            <label style="margin-left:12px;">📐 超过此宽度等比缩放：</label>
+            <input type="number" id="compressMaxWidth" value="1200" min="100" step="50">
+            <span style="font-size:12px;color:#999;">px</span>
+        </div>
+        <div id="uploadProgress"></div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+    <div class="gallery" id="gallery"></div>
+    <button id="loadMoreBtn">📂 加载更多</button>
+    <div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.umd.js"></script>
+<script>
+    // ===== 1. 密码验证 =====
+    (function() {
+        if (sessionStorage.getItem('img_mgr_auth') === 'true') return;
+        const input = prompt('请输入管理密码：');
+        if (input === '123456') {
+            sessionStorage.setItem('img_mgr_auth', 'true');
+        } else {
+            document.body.innerHTML = '<div style="text-align:center;padding:100px;font-family:system-ui;">🔒 密码错误，无权访问</div>';
+            throw new Error('Unauthorized');
+        }
+    })();
+
+    const $gallery = document.getElementById('gallery');
+    const $stats = document.getElementById('stats');
+    const $toast = document.getElementById('toast');
+    const $loadMoreBtn = document.getElementById('loadMoreBtn');
+    const $apiKey = document.getElementById('apiKey');
+    const $fileInput = document.getElementById('fileInput');
+    const $uploadLabel = document.querySelector('.upload-label');
+    const $uploadModule = document.getElementById('uploadModule');
+    const $progress = document.getElementById('uploadProgress');
+    let toastTimer;
+    let allFiles = [];
+    let shownCount = 0;
+    const PAGE_SIZE = 20;
+    const LOAD_MORE = 20;
+    const DEFAULT_API_KEY = '';
+    let apiVerified = false;
+
+    if (localStorage.getItem('api_key')) {
+        $apiKey.value = localStorage.getItem('api_key');
+    } else {
+        $apiKey.value = DEFAULT_API_KEY;
+    }
+    $apiKey.addEventListener('input', () => localStorage.setItem('api_key', $apiKey.value));
+
+    // ===== 2. Toast =====
+    function showToast(msg) {
+        if (!$toast) return;
+        $toast.textContent = msg;
+        $toast.style.transition = 'none';
+        $toast.classList.remove('show');
+        void $toast.offsetWidth;
+        $toast.style.transition = 'opacity .3s';
+        $toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => $toast.classList.remove('show'), 2000);
+    }
+
+    function showButtonFeedback(btn, isSuccess) {
+        if (!btn) return;
+        const orig = btn.innerHTML;
+        btn.innerHTML = isSuccess ? '✅' : '❌';
+        setTimeout(() => { btn.innerHTML = orig; }, 1500);
+    }
+
+    // ===== 3. 压缩质量选择样式 =====
+    document.querySelectorAll('.quality-radio').forEach(label => {
+        label.addEventListener('click', function() {
+            document.querySelectorAll('.quality-radio').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            this.querySelector('input').checked = true;
+            localStorage.setItem('compress_quality', this.querySelector('input').value);
+        });
+    });
+    const savedQ = localStorage.getItem('compress_quality');
+    if (savedQ) {
+        const r = document.querySelector(`.quality-radio input[value="${savedQ}"]`);
+        if (r) {
+            document.querySelectorAll('.quality-radio').forEach(l => l.classList.remove('active'));
+            r.closest('.quality-radio').classList.add('active');
+            r.checked = true;
+        }
+    }
+    document.getElementById('compressMinSize').addEventListener('change', function() { localStorage.setItem('compress_minSize', this.value); });
+    document.getElementById('compressMaxWidth').addEventListener('change', function() { localStorage.setItem('compress_maxWidth', this.value); });
+    if (localStorage.getItem('compress_minSize')) document.getElementById('compressMinSize').value = localStorage.getItem('compress_minSize');
+    if (localStorage.getItem('compress_maxWidth')) document.getElementById('compressMaxWidth').value = localStorage.getItem('compress_maxWidth');
+
+    function getCompressConfig() {
+        const q = document.querySelector('input[name="compressQuality"]:checked');
+        return {
+            quality: q ? parseFloat(q.value) : 0.8,
+            isOriginal: q ? parseFloat(q.value) >= 1.0 : false,
+            minSizeKB: parseInt(document.getElementById('compressMinSize').value) || 450,
+            maxWidth: parseInt(document.getElementById('compressMaxWidth').value) || 1200
+        };
+    }
+
+    // ===== 4. 图片压缩 =====
+    function compressImage(file) {
+        return new Promise((resolve) => {
+            const config = getCompressConfig();
+            if (config.isOriginal) { resolve(file); return; }
+            if (file.size < config.minSizeKB * 1024) { resolve(file); return; }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    let w = img.width, h = img.height;
+                    if (w > config.maxWidth) {
+                        h = (config.maxWidth / w) * h;
+                        w = config.maxWidth;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(function(blob) {
+                        resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+                    }, 'image/jpeg', config.quality);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // ===== 5. 上传 =====
+    async function uploadImages(files) {
+        const key = $apiKey.value.trim();
+        if (!key) { showToast('请先填写 API Key'); return; }
+        let ok = 0;
+        for (let i = 0; i < files.length; i++) {
+            $progress.textContent = `压缩 ${i+1}/${files.length}...`;
+            const cf = await compressImage(files[i]);
+            $progress.textContent = `上传 ${i+1}/${files.length}...`;
+            const fd = new FormData();
+            fd.append('file', cf);
+            try {
+                const r = await fetch('https://s.ee/api/v1/file/upload', { method: 'POST', headers: { 'Authorization': key }, body: fd });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const d = await r.json();
+                if (d.code === 200 && d.data && d.data.url) ok++;
+            } catch (e) { showToast(`上传失败: ${files[i].name}`); }
+            if (i < files.length - 1) await new Promise(r => setTimeout(r, 500));
+        }
+        $progress.textContent = '';
+        if (ok > 0) { showToast(`✅ 成功上传 ${ok} 张`); allFiles = []; shownCount = 0; $gallery.innerHTML = ''; loadFiles(); }
+    }
+
+    $fileInput.addEventListener('change', async (e) => {
+        if (e.target.files.length) { await uploadImages(Array.from(e.target.files)); e.target.value = ''; }
+    });
+
+    document.addEventListener('dragover', e => e.preventDefault());
+    document.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        if (files.length && apiVerified) await uploadImages(files);
+    });
+
+    // ===== 6. 复制 =====
+    function copyText(text, btn) {
+        if (!text) return;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => showButtonFeedback(btn, true)).catch(() => fallbackCopy(text, btn));
+        } else { fallbackCopy(text, btn); }
+    }
+    function fallbackCopy(text, btn) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'absolute'; ta.style.opacity = '0'; ta.style.left = '0'; ta.style.top = '0'; ta.style.fontSize = '12pt';
+        document.body.appendChild(ta);
+        const isIOS = /ipad|iphone/i.test(navigator.userAgent);
+        if (isIOS) { const r = document.createRange(); r.selectNodeContents(ta); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); ta.setSelectionRange(0, 999999); }
+        else ta.select();
+        try { showButtonFeedback(btn, document.execCommand('copy')); } catch(e) { showButtonFeedback(btn, false); }
+        document.body.removeChild(ta);
+    }
+
+    // ===== 7. 事件代理 =====
+    $gallery.addEventListener('click', e => {
+        const copyBtn = e.target.closest('.copy-btn');
+        if (copyBtn) { e.preventDefault(); copyText(copyBtn.dataset.url, copyBtn); return; }
+        const mdBtn = e.target.closest('.md-btn');
+        if (mdBtn) { e.preventDefault(); copyText('![](' + mdBtn.dataset.url + ')', mdBtn); return; }
+        const delBtn = e.target.closest('.del-btn');
+        if (delBtn) {
+            e.preventDefault();
+            if (!confirm('确定删除 ' + delBtn.dataset.name + '？')) return;
+            fetch(delBtn.dataset.url, { method: 'GET', headers: { 'Authorization': $apiKey.value.trim() } })
+                .then(r => r.json()).then(d => {
+                    if (d.success) { showToast('✅ 已删除'); allFiles = []; shownCount = 0; $gallery.innerHTML = ''; loadFiles(); }
+                    else showToast('❌ 删除失败');
+                }).catch(() => showToast('❌ 请求失败'));
+        }
+    });
+
+    // ===== 8. 渲染（真正的懒加载：只渲染 DOM，不设置 src） =====
+    function formatSize(b) {
+        if (!b) return '? KB';
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+        return (b/1048576).toFixed(1) + ' MB';
+    }
+    function formatDate(ts) { return ts ? new Date(ts*1000).toLocaleDateString('zh-CN') : '?'; }
+
+    function renderMore() {
+        const next = Math.min(shownCount + (shownCount === 0 ? PAGE_SIZE : LOAD_MORE), allFiles.length);
+        let html = '';
+        for (let i = shownCount; i < next; i++) {
+            const f = allFiles[i];
+            html += `<div class="card">
+                <a data-fancybox="gallery" href="${f.url}"><img data-src="${f.url}" alt="${f.filename}" onerror="this.style.display='none'"></a>
+                <div class="card-info"><div class="name" title="${f.filename}">${f.filename||'未知'}</div><div class="meta"><span>${formatSize(f.size)}</span><span>${formatDate(f.created_at)}</span></div></div>
+                <div class="card-actions">
+                    <div class="btn-row">
+                        <button class="copy-btn" data-url="${f.url}">📋 链接</button>
+                        <button class="del-btn" data-url="${f.delete}" data-name="${f.filename}">🗑 删除</button>
+                    </div>
+                    <button class="md-btn" data-url="${f.url}">📝 复制 Markdown</button>
+                </div>
+            </div>`;
+        }
+        $gallery.insertAdjacentHTML('beforeend', html);
+
+        // 真正的懒加载：只给这一批设置 src，还没渲染的卡片根本没有 img src
+        const cards = $gallery.querySelectorAll('.card');
+        for (let i = shownCount; i < next; i++) {
+            const img = cards[i].querySelector('img');
+            if (img && img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                img.onload = () => { img.classList.add('loaded'); };
+            }
+        }
+
+        if (typeof Fancybox !== "undefined") {
+            Fancybox.bind('[data-fancybox="gallery"]', {
+                hideScrollbar:false, lockScroll:false, touch:false, Hash:false, transitionDuration:200,
+                Carousel:{Thumbs:false, Toolbar:{display:{left:[],middle:[],right:["download"]}}, Zoomable:{Panzoom:{maxScale:"cover",panMode:"mousemove",mouseMoveFactor:1.1,friction:0.9}}}
+            });
+        }
+
+        shownCount = next;
+        $stats.textContent = `共 ${allFiles.length} 个文件，已加载 ${shownCount}`;
+        $loadMoreBtn.style.display = shownCount >= allFiles.length ? 'none' : 'block';
+        if (shownCount < allFiles.length) { $loadMoreBtn.textContent = `📂 加载更多 (${allFiles.length - shownCount} 张)`; $loadMoreBtn.disabled = false; }
+    }
+
+    function loadFiles() {
+        const key = $apiKey.value.trim();
+        if (!key) { showToast('请输入 API Key'); return; }
+        document.getElementById('loadBtn').disabled = true;
+        document.getElementById('loadBtn').textContent = '⏳ 加载中...';
+        $gallery.innerHTML = '<div class="empty">⏳ 加载中...</div>';
+        $loadMoreBtn.style.display = 'none';
+
+        // 先校验 Key
+        fetch('https://s.ee/api/v1/usage', { method:'GET', headers:{'Authorization':key} })
+            .then(r => {
+                if (!r.ok) throw new Error('Key 无效');
+                apiVerified = true;
+                $uploadLabel.style.display = 'inline-flex';
+                $uploadModule.classList.add('show');
+                return fetch('https://s.ee/api/v1/files', { method:'GET', headers:{'Authorization':key} });
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success && d.data) {
+                    allFiles = d.data; shownCount = 0; $gallery.innerHTML = '';
+                    if (!allFiles.length) { $gallery.innerHTML = '<div class="empty">📭 没有文件</div>'; $stats.textContent = ''; return; }
+                    renderMore();
+                } else { $gallery.innerHTML = '<div class="empty">❌ ' + (d.message||'加载失败') + '</div>'; }
+            })
+            .catch(e => {
+                $gallery.innerHTML = '<div class="empty">❌ ' + e.message + '</div>';
+                apiVerified = false;
+                $uploadLabel.style.display = 'none';
+                $uploadModule.classList.remove('show');
+            })
+            .finally(() => { document.getElementById('loadBtn').disabled = false; document.getElementById('loadBtn').textContent = '📂 加载文件'; });
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', loadFiles);
+    $loadMoreBtn.addEventListener('click', () => { $loadMoreBtn.disabled = true; $loadMoreBtn.textContent = '⏳ 加载中...'; setTimeout(renderMore, 100); });
+</script>
+</body>
+</html>
