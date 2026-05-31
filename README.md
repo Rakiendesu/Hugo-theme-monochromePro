@@ -51,6 +51,7 @@
 <div class="screenshots-row">
 <img width="928" height="754" alt="image" src="https://github.com/user-attachments/assets/2b188721-c1f0-4da2-8c03-4c2b0ab4e7d6" width="290" />
 <img width="487" height="754" alt="image" src="https://github.com/user-attachments/assets/ebf4105b-98d4-4d48-86cd-c7bea37da64a" width="290" />
+<img width="534" height="754" alt="image" src="https://github.com/user-attachments/assets/e43b5420-59ac-4075-b93e-0f115864c52e" width="290" />
 </div>
 
 
