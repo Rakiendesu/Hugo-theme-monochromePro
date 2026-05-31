@@ -11,6 +11,7 @@
 * 文章后台管理
 * 动态后台管理
 * 图床后台管理
+* 去中心化<动态>和<朋友圈>
 * 配置好后可完全脱离设备直接在网络上完成发布工作
 
 ## hugo版本：0.128.0
@@ -45,6 +46,14 @@
   </div>
 </div>
 
+### 🌏 朋友圈功能
+
+<div class="screenshots-row">
+<img width="928" height="754" alt="image" src="https://github.com/user-attachments/assets/2b188721-c1f0-4da2-8c03-4c2b0ab4e7d6" width="290" />
+<img width="487" height="754" alt="image" src="https://github.com/user-attachments/assets/ebf4105b-98d4-4d48-86cd-c7bea37da64a" width="290" />
+</div>
+
+
 ### 🎵 动态音乐功能
 
 <div class="screenshots-row">
@@ -71,11 +80,11 @@
 
 ***<基础>***
 
-1. [GitHub账户]([github](https://github.com/)
+1. [GitHub账户](https://github.com/)
 2. [Netlify注册](https://app.netlify.com/)
 3. [S.EE图床(免费5g)](https://s.ee)
 
-***开启<动态>必备***
+***开启<动态>和<朋友圈>必备***
 
 1. [Github的Gist](https://gist.github.com/)
 2. [获取一个Gist的Token](https://github.com/settings/tokens)
