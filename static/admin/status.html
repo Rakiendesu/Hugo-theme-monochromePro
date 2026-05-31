@@ -52,7 +52,84 @@
         </div>
     </div>
 </div>
+<!-- ==============================朋友圈配置=================================================== -->
+<div class="collapsible-section collapsed" id="momentsConfigSection">
+    <div class="collapsible-header" onclick="toggleSection('momentsConfigSection')">
+        <span>🌏 朋友圈配置</span>
+        <span class="collapse-icon">▼</span>
+    </div>
+    <div class="collapsible-body" id="momentsConfigBody">
+        <div class="info" style="background:#fff3e0;padding:12px;border-radius:12px;margin-bottom:20px;font-size:13px;">
+            ⚠️ 修改后需要点击底部"💾 保存朋友圈配置"才会生效
+        </div>
 
+        <!-- ===== 第一部分：综合设置 ===== -->
+        <div class="form-group" style="background:#f9f9f9;padding:16px;border-radius:12px;margin-bottom:16px;">
+            <label style="font-weight:700;font-size:15px;">⚙️ 综合设置</label>
+            
+            <div style="margin-bottom:12px;">
+                <label style="font-size:13px;color:#666;">自己用的：</label>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                    <span style="font-size:13px;">每人最多显示</span>
+                    <input type="number" id="mFriendsLimit" value="10" min="1" max="50" style="width:70px;padding:8px;text-align:center;">
+                    <span style="font-size:13px;">条动态</span>
+                </div>
+            </div>
+            
+            <div>
+                <label style="font-size:13px;color:#666;">别人用的（在别人朋友圈展示我的）：</label>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;cursor:pointer;">
+                        <input type="checkbox" id="mShowDevice" checked style="width:18px;height:18px;">
+                        显示发布设备
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;cursor:pointer;">
+                        <input type="checkbox" id="mShowLocation" style="width:18px;height:18px;">
+                        显示发布地区
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 第二部分：我的信息 ===== -->
+        <div class="form-group" style="background:#f9f9f9;padding:16px;border-radius:12px;margin-bottom:16px;">
+            <label style="font-weight:700;font-size:15px;">👤 我的信息（别人朋友圈显示）</label>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+                <input type="text" id="mSiteName" placeholder="名称/网站名" value="">
+                <input type="text" id="mSiteDomain" placeholder="网站地址 例:rakien.netlify.app" value="">
+                <input type="text" id="mSiteAvatar" placeholder="头像地址 例:https://..." value="">
+                <input type="text" id="mSiteBio" placeholder="简介 例:一个极客网站" value="">
+            </div>
+        </div>
+
+        <!-- ===== 第三部分：已添加朋友 ===== -->
+        <div class="form-group" style="background:#f9f9f9;padding:16px;border-radius:12px;margin-bottom:16px;">
+            <label style="font-weight:700;font-size:15px;">👥 已添加朋友</label>
+            
+            <!-- 添加朋友 -->
+            <div style="display:flex;gap:8px;margin:12px 0;">
+                <input type="text" id="mNewFriendUrl" placeholder="朋友的 JSON 链接" style="flex:1;">
+                <button id="mAddFriendBtn" style="background:#28a745;white-space:nowrap;">➕ 添加</button>
+            </div>
+            
+            <!-- 朋友列表 -->
+            <div id="mFriendsList" style="display:flex;flex-direction:column;gap:10px;">
+                <div style="text-align:center;color:#999;padding:20px;">⏳ 加载中...</div>
+            </div>
+            
+            <!-- 批量操作 -->
+            <div id="mFriendsBatchBar" style="display:none;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                <button id="mFriendsSelectAll" style="background:#f0f0f0;color:#333;font-size:12px;">全选</button>
+                <button id="mFriendsDeleteSelected" style="background:#dc3545;font-size:12px;">🗑 删除选中</button>
+                <span id="mFriendsSelectedCount" style="font-size:12px;color:#666;"></span>
+            </div>
+        </div>
+
+        <!-- 保存按钮 -->
+        <button id="mSaveConfigBtn" style="width:100%;padding:14px;background:#ff9800;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;">💾 保存朋友圈配置</button>
+        <div id="mSaveStatus" style="text-align:center;margin-top:8px;font-size:13px;color:#666;"></div>
+    </div>
+</div>
 <!-- ==============================动态发布部分=================================================== -->
 <div class="collapsible-section collapsed" id="publishSection">
     <div class="collapsible-header" onclick="toggleSection('publishSection')">

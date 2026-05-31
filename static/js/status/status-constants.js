@@ -27,7 +27,10 @@
         dice: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
 
         // 音乐卡片封面上的播放按钮
-        cardPlay: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>'
+        cardPlay: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+
+        //跳转图标
+        jump: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-right-up"><polyline points="10 9 15 4 20 9"></polyline><path d="M4 20h7a4 4 0 0 0 4-4V4"></path></svg>'
     };
 
     // ========== 移动设备关键词 ==========

@@ -4,23 +4,24 @@
 
     // 地图初始化（由 StatusManager 调用）
     window._initStatusMap = function(container, statuses, callbacks) {
-        var self = {};
+        
+        var mapConfig = window.STATUS_MAP_CONFIG || {};
 
         var map = L.map(container, {
-            zoomControl: true,
-            scrollWheelZoom: false,
-            doubleClickZoom: false,
-            touchZoom: false,
-            dragging: false,
-            boxZoom: false,
-            keyboard: false,
-            attributionControl: false
-        }).setView([37.87, 112.55], 3);
+            zoomControl: mapConfig.zoomControl !== false,
+            scrollWheelZoom: mapConfig.scrollWheelZoom === true,
+            doubleClickZoom: mapConfig.doubleClickZoom === true,
+            touchZoom: mapConfig.touchZoom === true,
+            dragging: mapConfig.dragging === true,
+            boxZoom: mapConfig.boxZoom === true,
+            keyboard: mapConfig.keyboard === true,
+            attributionControl: mapConfig.attributionControl === true
+        }).setView([mapConfig.lat || 37.87, mapConfig.lon || 112.55], mapConfig.zoom || 3);
 
         L.tileLayer(window.STATUS_MAP_TILE_URL, {
             attribution: '<img src="https://webapi.amap.com/theme/v2.0/logo@2x.png" style="height:20px; vertical-align:middle;">',
-            maxZoom: 7,
-            minZoom: 3
+            maxZoom: mapConfig.maxZoom || 7,
+            minZoom: mapConfig.minZoom || 3
         }).addTo(map);
 
         var markerCluster = L.markerClusterGroup({

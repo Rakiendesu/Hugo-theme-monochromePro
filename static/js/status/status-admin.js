@@ -631,9 +631,66 @@ async function loadStatuses() {
             throw new Error('GitHub Token 或 Gist ID 连接失败');
         }
 
-        const gist = await res.json();
-        const data = JSON.parse(gist.files[getConfig().filename].content);
-        currentStatuses = data.statuses || [];
+const gist = await res.json();
+const rawContent = gist.files[getConfig().filename].content;
+var data = {};
+
+try {
+    data = JSON.parse(rawContent);
+} catch (e) {
+    data = {};
+}
+
+// ========== 初始化残缺数据（只追加不覆盖） ==========
+var needUpdate = false;
+
+if (!data.site) {
+    data.site = {
+        name: "",
+        domain: "",
+        avatar: "",
+        bio: ""
+    };
+    needUpdate = true;
+}
+if (!data.friends) {
+    data.friends = [];
+    needUpdate = true;
+}
+if (!data.setting) {
+    data.setting = {
+        friends_limit: 10,
+        device: true,
+        location: true
+    };
+    needUpdate = true;
+}
+if (!data.statuses) {
+    data.statuses = [];
+    needUpdate = true;
+}
+
+// 如果有缺失字段，自动回写更新 Gist
+if (needUpdate) {
+    await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Status-Manager'
+        },
+        body: JSON.stringify({
+            files: {
+                [getConfig().filename]: {
+                    content: JSON.stringify(data, null, 2)
+                }
+            }
+        })
+    });
+}
+
+currentStatuses = data.statuses;
+// ========== 初始化结束 ==========
         
         // 排序处理
         currentStatuses.sort((a, b) => {
@@ -1932,3 +1989,231 @@ function addGreenPreview(url) {
     };
     previewContainer.appendChild(previewDiv);
 }
+
+
+// ==================== 朋友圈配置管理 ====================
+(function() {
+    var currentFullData = null; // 完整的 JSON 数据
+
+    function initMomentsConfig() {
+        if (!currentStatuses || currentStatuses.length === 0) {
+            // 数据还没加载，等 loadStatuses 完成后再试
+            setTimeout(initMomentsConfig, 500);
+            return;
+        }
+
+        // 重新从 Gist 拉完整数据（包含 site、friends、setting）
+        var token = document.getElementById('githubToken').value;
+        var gistId = getConfig().gistId;
+        var filename = getConfig().filename;
+
+        fetch('https://api.github.com/gists/' + gistId, {
+            headers: { 'Authorization': 'token ' + token }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(gist) {
+            var raw = gist.files[filename].content;
+            currentFullData = JSON.parse(raw);
+            renderMomentsConfig();
+        })
+        .catch(function(e) {
+            console.error('加载朋友圈配置失败:', e);
+        });
+    }
+
+    function renderMomentsConfig() {
+        var d = currentFullData;
+        var site = d.site || {};
+        var setting = d.setting || {};
+        var friends = d.friends || [];
+
+        // 第一部分：综合设置
+        document.getElementById('mFriendsLimit').value = setting.friends_limit || 10;
+        document.getElementById('mShowDevice').checked = setting.device !== false;
+        document.getElementById('mShowLocation').checked = setting.location !== false;
+
+        // 第二部分：我的信息
+        document.getElementById('mSiteName').value = site.name || '';
+        document.getElementById('mSiteDomain').value = site.domain || '';
+        document.getElementById('mSiteAvatar').value = site.avatar || '';
+        document.getElementById('mSiteBio').value = site.bio || '';
+
+        // 第三部分：朋友列表
+        renderFriendsList(friends);
+    }
+
+    function renderFriendsList(friends) {
+        var container = document.getElementById('mFriendsList');
+        if (!friends || friends.length === 0) {
+            container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">还没有添加朋友</div>';
+            document.getElementById('mFriendsBatchBar').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('mFriendsBatchBar').style.display = 'flex';
+        updateSelectedCount();
+
+        // 逐个渲染，异步加载朋友信息
+        container.innerHTML = '';
+        friends.forEach(function(friend, index) {
+            var card = document.createElement('div');
+            card.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px;background:#fff;border-radius:10px;border:1px solid #eee;';
+            card.innerHTML = 
+                '<input type="checkbox" class="m-friend-checkbox" data-index="' + index + '" style="width:18px;height:18px;flex-shrink:0;">' +
+                '<div class="m-friend-info" style="flex:1;min-width:0;">' +
+                '<div style="font-size:13px;color:#999;">⏳ 加载中...</div>' +
+                '<div style="font-size:11px;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + friend.json_url + '</div>' +
+                '</div>' +
+                '<button class="m-friend-edit-btn" data-index="' + index + '" style="background:#ff9800;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">✏️</button>';
+
+            container.appendChild(card);
+
+            // 异步加载朋友网站信息
+            loadFriendPreview(friend.json_url, card.querySelector('.m-friend-info'));
+        });
+
+        // 绑定事件
+        bindFriendsEvents(friends);
+    }
+
+    function loadFriendPreview(url, infoDiv) {
+        fetch(url.replace('gist.github.com', 'gist.githubusercontent.com') + '?t=' + Date.now())
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var site = data.site || {};
+                var name = site.name || '未知';
+                var avatar = site.avatar || '';
+                var bio = site.bio || '';
+                infoDiv.innerHTML =
+                    '<div style="display:flex;align-items:center;gap:8px;">' +
+                    (avatar ? '<img src="' + avatar + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">' : '') +
+                    '<div>' +
+                    '<div style="font-weight:600;font-size:14px;">' + name + '</div>' +
+                    (bio ? '<div style="font-size:12px;color:#888;">' + bio + '</div>' : '') +
+                    '</div></div>';
+            })
+            .catch(function() {
+                infoDiv.innerHTML = '<div style="font-size:13px;color:#f44336;">❌ 加载失败</div>';
+            });
+    }
+
+    function bindFriendsEvents(friends) {
+        // 全选
+        document.getElementById('mFriendsSelectAll').onclick = function() {
+            var boxes = document.querySelectorAll('.m-friend-checkbox');
+            var allChecked = true;
+            boxes.forEach(function(cb) { if (!cb.checked) allChecked = false; });
+            boxes.forEach(function(cb) { cb.checked = !allChecked; });
+            updateSelectedCount();
+        };
+
+        // 删除选中
+        document.getElementById('mFriendsDeleteSelected').onclick = function() {
+            var boxes = document.querySelectorAll('.m-friend-checkbox:checked');
+            if (boxes.length === 0) { showToast('请先勾选朋友', 'error'); return; }
+            if (!confirm('确定删除选中的 ' + boxes.length + ' 个朋友？')) return;
+
+            var indices = [];
+            boxes.forEach(function(cb) { indices.push(parseInt(cb.dataset.index)); });
+            indices.sort(function(a, b) { return b - a; });
+            indices.forEach(function(i) { currentFullData.friends.splice(i, 1); });
+            renderFriendsList(currentFullData.friends);
+            showToast('已删除，记得点保存', 'success');
+        };
+
+        // checkbox 变化
+        document.getElementById('mFriendsList').addEventListener('change', function(e) {
+            if (e.target.classList.contains('m-friend-checkbox')) updateSelectedCount();
+        });
+
+        // 编辑按钮
+        document.querySelectorAll('.m-friend-edit-btn').forEach(function(btn) {
+            btn.onclick = function() {
+                var index = parseInt(this.dataset.index);
+                var newUrl = prompt('修改 JSON 链接：', friends[index].json_url);
+                if (newUrl && newUrl.trim()) {
+                    currentFullData.friends[index].json_url = newUrl.trim();
+                    renderFriendsList(currentFullData.friends);
+                    showToast('已修改，记得点保存', 'success');
+                }
+            };
+        });
+    }
+
+    function updateSelectedCount() {
+        var count = document.querySelectorAll('.m-friend-checkbox:checked').length;
+        document.getElementById('mFriendsSelectedCount').textContent = '已选 ' + count + ' 个';
+    }
+
+    // 添加朋友
+    document.getElementById('mAddFriendBtn').onclick = function() {
+        var url = document.getElementById('mNewFriendUrl').value.trim();
+        if (!url) { showToast('请输入 JSON 链接', 'error'); return; }
+        currentFullData.friends.push({ json_url: url });
+        renderFriendsList(currentFullData.friends);
+        document.getElementById('mNewFriendUrl').value = '';
+        showToast('已添加，记得点保存', 'success');
+    };
+
+    // 保存配置
+    // 保存配置
+    document.getElementById('mSaveConfigBtn').onclick = async function() {
+        var token = document.getElementById('githubToken').value;
+        if (!token) { showToast('请先填写 Token', 'error'); return; }
+
+        var btn = document.getElementById('mSaveConfigBtn');
+        var statusEl = document.getElementById('mSaveStatus');
+        btn.disabled = true;
+        btn.textContent = '⏳ 保存中...';
+        statusEl.textContent = '';
+
+        // 收集第一部分
+        currentFullData.setting = currentFullData.setting || {};
+        currentFullData.setting.friends_limit = parseInt(document.getElementById('mFriendsLimit').value) || 10;
+        currentFullData.setting.device = document.getElementById('mShowDevice').checked;
+        currentFullData.setting.location = document.getElementById('mShowLocation').checked;
+
+        // 收集第二部分
+        currentFullData.site = currentFullData.site || {};
+        currentFullData.site.name = document.getElementById('mSiteName').value.trim();
+        currentFullData.site.domain = document.getElementById('mSiteDomain').value.trim();
+        currentFullData.site.avatar = document.getElementById('mSiteAvatar').value.trim();
+        currentFullData.site.bio = document.getElementById('mSiteBio').value.trim();
+
+        try {
+            var res = await fetch('https://api.github.com/gists/' + getConfig().gistId, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': 'token ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        [getConfig().filename]: {
+                            content: JSON.stringify(currentFullData, null, 2)
+                        }
+                    }
+                })
+            });
+            if (res.ok) {
+                statusEl.textContent = '✅ 保存成功';
+                statusEl.style.color = '#28a745';
+            } else {
+                throw new Error('HTTP ' + res.status);
+            }
+        } catch (e) {
+            statusEl.textContent = '❌ 保存失败: ' + e.message;
+            statusEl.style.color = '#dc3545';
+        }
+
+        btn.disabled = false;
+        btn.textContent = '💾 保存朋友圈配置';
+        setTimeout(function() { statusEl.textContent = ''; }, 3000);
+    };
+
+    // 暴露到全局
+    window._initMomentsConfig = initMomentsConfig;
+
+    // 延迟初始化，等 loadStatuses 完成
+    setTimeout(initMomentsConfig, 1500);
+})();

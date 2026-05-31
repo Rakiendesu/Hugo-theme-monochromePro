@@ -138,3 +138,11 @@
     transform: translateY(0);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+
+
+/* 朋友圈/动态作者链接鼠标悬浮时文字显示自定义主题色 */
+.moments-author a:hover span {
+    color: var(--color-accent) !important;
+    transition: color 0.2s ease; /* 让颜色变化有 0.2 秒的平滑过渡效果 */
+}

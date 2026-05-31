@@ -91,199 +91,229 @@
 
 ***部署后去github修改根目录的hugo.toml配置文件.***
 
-# 我的hugo.toml配置文件
+# Hugo 配置文件说明
+
+> 复制以下配置到你的 `hugo.toml`，根据注释填写你自己的信息即可。
 
 ```toml
-title = "Rakien"
+# ============================================================
+# 网站基本信息
+# ============================================================
+title = "你的网站名"
 theme = "monochrome"
 defaultContentLanguage = "zh"
-baseURL = "https://rakien.netlify.app"
+baseURL = "https://你的域名"
 
+# 第三方服务（不用的留空）
 [services]
-  [services.disqus]
-    shortname = ""
-  [services.googleAnalytics]
-    id = ""
+  [services.disqus] shortname = ""
+  [services.googleAnalytics] id = ""
 
+# ============================================================
+# 全局参数
+# ============================================================
 [params]
-  navbar_title = "" #网站名
-  footer = "我心单单向明月🌙" #页脚
-  favicon = "favicon.ico" #网站小图标
-  enable_toc = true
-  enable_collapsible_toc = false
+  navbar_title = ""               # 导航栏标题，留空则用 title
+  footer = "你的页脚文字"          # 页面底部文字
+  favicon = "favicon.ico"         # 浏览器标签页图标
+  enable_toc = true               # 文章目录
+  enable_collapsible_toc = false  # 折叠目录
   enable_collapsible_changelogs = true
-  enable_header_anchor = true
-  enable_math = false
-  enable_zooming_js = false
-  enable_site_search = true
-  author = "Rakien"
+  enable_header_anchor = true     # 标题锚点链接
+  enable_math = false             # 数学公式
+  enable_zooming_js = false       # 图片缩放
+  enable_site_search = true       # 站内搜索
+  author = "你的名字"
   enable_open_graph = false
   enable_twitter_cards = false
-  color_scheme = "light"
-  og_image = "https://files.seeusercontent.com/2026/05/16/Gst8/avatar.jpg" #微信/qq等聊天软件分享时识别出的图片
-  primaryColor = "#ff9800" #统一主题颜色修改
+  color_scheme = "light"          # 默认主题 light / dark
+  og_image = "https://你的头像地址"  # 分享时显示的图片
+  primaryColor = "#ff9800"        # 全局主题色
 
   [params.list_layout]
-    enable_group_by_year = true
-    enable_show_date = true
-    enable_pagination = true
+    enable_group_by_year = true   # 文章列表按年份分组
+    enable_show_date = true       # 显示日期
+    enable_pagination = true      # 分页
 
-
-
+# ============================================================
+# 导航菜单
+# ============================================================
 [[menu.navbar]]
   identifier = "home"
   name = "🏠 首页"
-  title = "home"
   url = "/"
   weight = 1
 
 [[menu.navbar]]
   identifier = "status"
   name = "💬 动态"
-  title = "status"
   url = "/status/"
   weight = 2
 
 [[menu.navbar]]
   identifier = "post"
   name = "✏️ 文章"
-  title = "post"
   url = "/post/"
   weight = 3
 
 [[menu.navbar]]
   identifier = "fenlei"
   name = "💼 分类"
-  title = "fenlei"
   url = "/fenlei/"
   weight = 5
 
 [[menu.navbar]]
   identifier = "gallery"
   name = "🖼️ 相册"
-  title = "gallery"
   url = "/gallery/"
   weight = 10
 
 [[menu.navbar]]
   identifier = "about"
   name = "🍼 关于"
-  title = "about"
   url = "/about/"
   weight = 20
 
 [outputs]
   home = ["HTML", "RSS", "JSON"]
 
-
-#########⬇️⬇️⬇️⬇️⬇️⬇️动态页面配置⬇️⬇️⬇️⬇️⬇️⬇️##########
+# ============================================================
+# 动态页面
+# ============================================================
 [params.status]
-  # 动态数据源 *
-  status_api_url = "https://gist.githubusercontent.com/你的用户名/你的GistID/raw/你的文件名.json" # 你gist创建的json文件
-  filter = true #筛选动态按钮
-  add = true #添加动态按钮
-  music = true #音乐功能
-  comment = true #评论功能
-  location = true #显示发布地点
-  date = true #显示发布日期
-  device = true #显示发布设备
+  status_api_url = "https://gist.githubusercontent.com/你的用户名/你的GistID/raw/你的文件名.json"
+  filter = true       # 筛选按钮
+  add = true          # 添加按钮
+  music = true        # 音乐
+  comment = true      # 评论
+  location = true     # 显示地点
+  date = true         # 显示日期
+  device = true       # 显示设备
 
-# 地图模块和地图瓦片
+# ============================================================
+# 朋友圈
+# ============================================================
+[params.moments]
+  filter = true       # 筛选按钮
+  music = true        # 音乐
+  comment = true      # 评论
+  showme = false      # 是否同时显示自己的动态
+
+[params.moments.map]
+  enable = true       # 朋友圈地图开关
+
+# ============================================================
+# 地图配置（动态和朋友圈共用）
+# ============================================================
 [params.status.map]
-  enable = true # 动态页地图总开关
+  enable = true       # 动态页地图开关
+  ############  地图配置（动态和朋友圈共用）#######
   js = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   css = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  tile_url = "https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}" # 地图瓦片地址 这是高德地图
+  tile_url = "https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
   markerClusterJs = "https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
   markerClusterCss = "https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
-  markerClusterDefaultCss = "https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"##
+  markerClusterDefaultCss = "https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+  ######### 地图初始状态（一般不用改）#########
+  zoomControl = true
+  scrollWheelZoom = false
+  doubleClickZoom = false
+  touchZoom = false
+  dragging = false
+  boxZoom = false
+  keyboard = false
+  attributionControl = false
+  lat = 37.87
+  lon = 112.55
+  zoom = 3
+  maxZoom = 7
+  minZoom = 3
 
-#####################评论功能##################
+# ============================================================
+# 评论系统
+# ============================================================
 [params.comments]
-  enable = true  # 控制所有文章评论开关
+  enable = true
 
 [params.twikoo]
-  enable = true  # Twikoo独立开关
-  cdn = "https://cdn.jsdelivr.net/npm/twikoo@1.7.9/dist/twikoo.min.js"  # CDN地址可配置
-  envId = ""
+  enable = true
+  cdn = "https://cdn.jsdelivr.net/npm/twikoo@1.7.9/dist/twikoo.min.js"
+  envId = "https://你的twikoo地址/.netlify/functions/twikoo"
   el = "#tcomment"
-  region = "us-west-2"  # 默认区域
+  region = "us-west-2"
   path = ""
 
 [params.artalk]
-  enable = false  # Artalk独立开关
-  cdn = "https://cdnjs.cloudflare.com/ajax/libs/artalk/2.9.1/Artalk.js"  # CDN地址可配置
+  enable = false
+  cdn = "https://cdnjs.cloudflare.com/ajax/libs/artalk/2.9.1/Artalk.js"
   el = "#artalkComments"
-  pageKey = ""  # 固定链接
-  pageTitle = ""  # 页面标题
-  server = ""  # 后端地址
-  site = "Rakien's Blog"
+  pageKey = ""
+  pageTitle = ""
+  server = ""
+  site = ""
 
-######################灯箱功能####################
-#灯箱配置
+# ============================================================
+# 灯箱（图片点击放大）
+# ============================================================
 [params.fancybox]
-  enable = true #全局开启和关闭
+  enable = true
   css_url = "https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.css"
   js_url = "https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.umd.js"
 
-######################还是不要开了#################
-#~~~~~~~~AOS滚动渐入动画配置~~~~~~~~~~~~
+# ============================================================
+# AOS 滚动动画（建议关闭）
+# ============================================================
 [params.aos]
-enable = false  # AOS 动画总开关
-js_url = "https://unpkg.com/aos@2.3.1/dist/aos.js"  # AOS JS 地址
-effect = "zoom-in-up"  # 默认动画效果
+  enable = false
+  js_url = "https://unpkg.com/aos@2.3.1/dist/aos.js"
+  effect = "zoom-in-up"
 
 [params.aos.init]
-startEvent = "DOMContentLoaded"
-offset = 1
-duration = 800
-# delay = 0 #延迟毫秒
-easing = "ease" #动画进入感觉
-once = true #只执行一次
-mirror = false 
-anchorPlacement = "top-bottom"
+  startEvent = "DOMContentLoaded"
+  offset = 1
+  duration = 800
+  easing = "ease"
+  once = true
+  mirror = false
+  anchorPlacement = "top-bottom"
 
-################代码块 重写过,尽量不要动了#############
-
+# ============================================================
+# 代码高亮
+# ============================================================
 [params.syntax_highlight]
-lib = "builtin"      # 使用内置 Chroma
-  [params.syntax_highlight.builtin]
-    enable_code_copy = true  # 启用复制按钮 已无效
+  lib = "builtin"
 
-# 启用 Hugo 内置的 Chroma 高亮
+[params.syntax_highlight.builtin]
+  enable_code_copy = true
+
 [markup.highlight]
-codeFences = true      # 必须为 true
-lineNos = false         # 显示行号(重写了行号, 这个不好用, 不要开)
-lineNumbersInTable = false
-noClasses = false
-tabWidth = 4
+  codeFences = true
+  lineNos = false
+  lineNumbersInTable = false
+  noClasses = false
+  tabWidth = 4
 
-# 添加代码块折叠配置
 [markup.highlight.codeBlock]
-lineNos = true
-fold = "auto"          # 自动折叠长代码块
-foldLimit = 15         # 超过15行自动折叠
+  lineNos = true
+  fold = "auto"
+  foldLimit = 15
 
-######################网站统计####################
-#谷歌统计
+# ============================================================
+# 网站统计（不用的留空 id）
+# ============================================================
 [params.google]
   enable = true
-  id = ""
+  id = ""                     # Google Analytics ID
 
-#umami统计
 [params.umami]
   enable = true
   src = "https://cloud.umami.is/script.js"
-  id = ""
-################################################
+  id = ""                     # Umami Website ID
 
-######################瀑布流js地址#################
-# masonry瀑布流总配置
+# ============================================================
+# 瀑布流（不用的留空 id）
+# ============================================================
 [params.masonry]
   jsUrl = "https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"
   imagesloaded = "https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"
-################################################
 ```
-
-
-
