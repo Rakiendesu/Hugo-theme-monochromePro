@@ -24,34 +24,20 @@
 
 <div class="feature-grid">
 
-### 📝 可配置文章发布后台
-
-<img src="https://github.com/user-attachments/assets/82903a59-ed7c-42bb-9c47-9872167b39f3" alt="文章后台" width="600" />
-
-### 📍 动态 & 图床后台管理
+### 📍 后台管理
 
 <div class="screenshots">
-  <img src="https://github.com/user-attachments/assets/3a8a7c6d-6666-44ff-8caa-976236ef6876" alt="后台1" width="600" />
   <div class="screenshots-row">
-    <img src="https://github.com/user-attachments/assets/b9b4372a-913f-4958-bc74-901a63fc9723" alt="后台2" width="290" />
-    <img src="https://github.com/user-attachments/assets/3f193924-a9a2-4a9a-95c0-989e77b541ce" alt="后台3" width="290" />
-  </div>
-  <div class="screenshots-row">
-    <img src="https://github.com/user-attachments/assets/e7e629e5-5931-4bf0-b370-b50a7cd00236" alt="后台4" width="290" />
-    <img src="https://github.com/user-attachments/assets/5ca62039-d332-4b58-bd5a-c730f878f1b2" alt="后台5" width="290" />
-  </div>
-  <div class="screenshots-row">
-    <img src="https://github.com/user-attachments/assets/8947c8e4-ffe7-4802-91ed-435f5dab8690" alt="后台6" width="290" />
-    <img src="https://github.com/user-attachments/assets/180b6974-1a25-45b0-969a-07b124653277" alt="后台7" width="290" />
+    <img alt="IMG_5678" src="https://github.com/user-attachments/assets/550bf989-1128-4c42-84e5-ba15fcbf6017" />
   </div>
 </div>
 
 ### 🌏 朋友圈功能
 
 <div class="screenshots-row">
-<img width="928" height="754" alt="image" src="https://github.com/user-attachments/assets/2b188721-c1f0-4da2-8c03-4c2b0ab4e7d6" width="290" />
-<img width="487" height="754" alt="image" src="https://github.com/user-attachments/assets/ebf4105b-98d4-4d48-86cd-c7bea37da64a" width="290" />
-<img width="534" height="754" alt="image" src="https://github.com/user-attachments/assets/e43b5420-59ac-4075-b93e-0f115864c52e" width="290" />
+<img  alt="image" src="https://github.com/user-attachments/assets/2b188721-c1f0-4da2-8c03-4c2b0ab4e7d6" width="290" />
+<img  alt="image" src="https://github.com/user-attachments/assets/ebf4105b-98d4-4d48-86cd-c7bea37da64a" width="290" />
+<img  alt="image" src="https://github.com/user-attachments/assets/e43b5420-59ac-4075-b93e-0f115864c52e" width="290" />
 </div>
 
 
