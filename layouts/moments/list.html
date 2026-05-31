@@ -1,0 +1,158 @@
+{{ define "content" }}
+
+<!----------------- 地图配置 --------------->
+{{ if .Site.Params.moments.map.enable }}
+<!-- 地图 JS -->
+<script src="{{ .Site.Params.status.map.js | safeURL }}"></script>
+<script src="{{ .Site.Params.status.map.markerClusterJs | safeURL }}"></script>
+<!-- 地图 CSS -->
+<link rel="stylesheet" href="{{ .Site.Params.status.map.css | safeURL }}" />
+<link rel="stylesheet" href="{{ .Site.Params.status.map.markerClusterCss | safeURL }}" />
+<link rel="stylesheet" href="{{ .Site.Params.status.map.markerClusterDefaultCss | safeURL }}" />
+{{ end }}
+
+<!-- -----------------Masonry瀑布流js ------------------->
+<script src="{{ .Site.Params.masonry.jsUrl | safeURL }}"></script>
+<script src="{{ .Site.Params.masonry.imagesloaded | safeURL }}"></script>
+
+<!--------------- 添加 音乐APlayer.min.js -------------------->
+{{ if .Site.Params.moments.music }}
+<script src="/js/APlayer.min.js"></script>
+<link rel="stylesheet" href="/css/APlayer.min.css" />
+<script src="/js/status/music-ui.js"></script>
+<link rel="stylesheet" href="/css/status/music-ui.css" />
+{{ end }}
+
+<!-------------------- 引入 twikoo -------------------->
+{{ if .Site.Params.moments.comment }}
+<script src="https://cdn.jsdelivr.net/npm/twikoo@1.7.9/dist/twikoo.min.js"></script>
+<link rel="stylesheet" href="/css/status/status-twikoo-ui.css" />
+{{ end }}
+
+<div class="status-container">
+    <div class="status-header">
+        <h1>
+            🌏 朋友圈
+            {{ if .Site.Params.moments.filter }}
+            <span class="filter-toggle" style="width:29px;height:29px;" id="refreshBtn" title="重置">
+                <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            </span>
+            <span class="filter-toggle" style="width:29px;height:29px;" id="filterToggle" title="筛选">
+                <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+            </span>
+            {{ end }}
+        </h1>
+    </div>
+
+    {{ if .Site.Params.moments.map.enable }}
+    <div id="status-map"></div>
+    {{ end }}
+    <!-- 朋友头像栏 -->
+    <div id="moments-avatar-bar" class="moments-avatar-bar">
+        <button id="moments-avatar-left" class="moments-avatar-arrow" style="display:none;">◀</button>
+        <div id="moments-avatar-track" class="moments-avatar-track"></div>
+        <button id="moments-avatar-right" class="moments-avatar-arrow" style="display:none;">▶</button>
+    </div>
+    <!---------------------------------------------- 筛选弹窗 -------------------------------------------->
+    {{ if .Site.Params.moments.filter }}
+    <div class="filter-modal" id="filterModal">
+        <div class="filter-modal-box">
+            <div class="filter-modal-header">
+                <span>🔍 筛选动态</span>
+                <button class="filter-modal-close" id="filterModalClose">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            <div class="filter-bar">
+                <div id="filter-year" class="custom-select-wrapper" data-type="year"></div>
+                <div id="filter-month" class="custom-select-wrapper" data-type="month"></div>
+                <div id="filter-location" class="custom-select-wrapper" data-type="location"></div>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
+    <div id="status-list" class="status-list">
+        <div class="grid-sizer"></div>
+    </div>
+    
+    <div class="gallery-load-area">
+        <button id="load-more-btn" class="gallery-load-btn" style="display: none;">正在加载...</button>
+    </div>
+</div>
+
+<!----------------------------- Twikoo 评论弹窗 -------------------------------->
+{{ if .Site.Params.moments.comment }}
+<div id="commentModalOverlay" class="comment-modal-overlay" 
+     onmousedown="window._statusActions.closeModal(event)" 
+     onmouseup="window._statusActions.closeModal(event)">
+    <div class="comment-modal-box" onclick="event.stopPropagation()">
+        <div class="comment-modal-header">
+            <span>💬 评论</span>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="comment-share-btn" onclick="window._statusActions.copyShareLink()" title="复制链接">
+                    🔗 分享该动态
+                </button>
+                <button class="comment-modal-close" onclick="window._statusActions.closeCommentModal()">✕</button>
+            </div>
+        </div>
+        <div class="comment-modal-body" id="commentModalBody"></div>
+    </div>
+</div>
+{{ end }}
+
+<!-- 引入拆分的js -->
+<script>
+    window.STATUS_API_URL = "{{ .Site.Params.status.status_api_url | safeJS }}";
+    window.STATUS_MAP_TILE_URL = "{{ .Site.Params.status.map.tile_url | safeJS }}";
+    window.STATUS_STATUS_COMMENT = {{ .Site.Params.moments.comment | default true }};
+    window.STATUS_STATUS_LOCATION = {{ .Site.Params.status.location | default true }};
+    window.STATUS_STATUS_DATE = {{ .Site.Params.status.date | default true }};
+    window.STATUS_STATUS_DEVICE = {{ .Site.Params.status.device | default true }};
+    window.STATUS_STATUS_MUSIC = {{ .Site.Params.moments.music | default true }};
+    window.MOMENTS_SHOW_ME = {{ .Site.Params.moments.showme | default true }};
+</script>
+<!-- 地图初始化数据 -->
+<script>
+    window.STATUS_MAP_CONFIG = {
+        zoomControl: {{ .Site.Params.status.map.zoomControl | default true }},
+        scrollWheelZoom: {{ .Site.Params.status.map.scrollWheelZoom | default false }},
+        doubleClickZoom: {{ .Site.Params.status.map.doubleClickZoom | default false }},
+        touchZoom: {{ .Site.Params.status.map.touchZoom | default false }},
+        dragging: {{ .Site.Params.status.map.dragging | default false }},
+        boxZoom: {{ .Site.Params.status.map.boxZoom | default false }},
+        keyboard: {{ .Site.Params.status.map.keyboard | default false }},
+        attributionControl: {{ .Site.Params.status.map.attributionControl | default false }},
+        lat: {{ .Site.Params.status.map.lat | default 37.87 }},
+        lon: {{ .Site.Params.status.map.lon | default 112.55 }},
+        zoom: {{ .Site.Params.status.map.zoom | default 3 }},
+        maxZoom: {{ .Site.Params.status.map.maxZoom | default 7 }},
+        minZoom: {{ .Site.Params.status.map.minZoom | default 3 }}
+    };
+    window.STATUS_MAP_TILE_URL = "{{ .Site.Params.status.map.tile_url | safeJS }}";
+</script>
+
+<link rel="stylesheet" href="/css/status/status-core.css">
+<link rel="stylesheet" href="/css/status/status-card.css">
+{{ if .Site.Params.moments.music }}
+<link rel="stylesheet" href="/css/status/status-music.css">
+{{ end }}
+<link rel="stylesheet" href="/css/status/status-filter.css">
+{{ if .Site.Params.moments.map.enable }}
+<link rel="stylesheet" href="/css/status/status-misc.css">
+{{ end }}
+
+<script src="/js/status/status-constants.js"></script>
+{{ if .Site.Params.moments.music }}
+<script src="/js/status/status-music.js"></script>
+{{ end }}
+{{ if .Site.Params.moments.map.enable }}
+<script src="/js/status/status-map.js"></script>
+{{ end }}
+{{ if .Site.Params.moments.comment }}
+<script src="/js/status/status-comment.js"></script>
+<script src="/js/status/status-twikoo-ui.js"></script>
+{{ end }}
+<script src="/js/moments/moments.js"></script>
+
+{{ end }}
