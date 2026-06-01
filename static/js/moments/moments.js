@@ -169,24 +169,50 @@ if (this.friendQueue.length > 0) {
             });
         };
 
-MomentsManager.prototype.loadAllFriendsSite = async function() {
-    var self = this;
-    for (var i = 0; i < this.friendQueue.length; i++) {
-        var friend = this.friendQueue[i];
-        try {
-            var res = await fetch(friend.json_url + '?t=' + Date.now());
-            var friendData = await res.json();
-            friend.name = (friendData.site && friendData.site.name) || ('朋友' + (i + 1));
-            friend.avatar = (friendData.site && friendData.site.avatar) || '';
-            friend.domain = (friendData.site && friendData.site.domain) || '';
-            friend.siteLoaded = true;
-        } catch (e) {
-            friend.name = '朋友' + (i + 1);
-            friend.avatar = '';
-            friend.domain = '';
-        }
-    }
-};
+        MomentsManager.prototype.loadAllFriendsSite = async function() {
+            var self = this;
+            var total = this.friendQueue.length;
+            var loaded = 0;
+            
+            var $progressBar = $('#moments-progress');
+            var $progressFill = $('#moments-progress-fill');
+            var $progressText = $('#moments-progress-text');
+            
+            $progressBar.show();
+            $progressText.show();
+            
+            function updateProgress() {
+                loaded++;
+                var pct = Math.round((loaded / total) * 100);
+                $progressFill.css('width', pct + '%');
+                $progressText.text('加载好友信息 ' + loaded + '/' + total);
+            }
+            
+            var promises = this.friendQueue.map(function(friend, i) {
+                return fetch(friend.json_url + '?t=' + Date.now())
+                    .then(function(res) { return res.json(); })
+                    .then(function(friendData) {
+                        friend.name = (friendData.site && friendData.site.name) || ('朋友' + (i + 1));
+                        friend.avatar = (friendData.site && friendData.site.avatar) || '';
+                        friend.domain = (friendData.site && friendData.site.domain) || '';
+                        friend.siteLoaded = true;
+                        updateProgress();
+                    })
+                    .catch(function() {
+                        friend.name = '朋友' + (i + 1);
+                        friend.avatar = '';
+                        friend.domain = '';
+                        updateProgress();
+                    });
+            });
+            
+            await Promise.all(promises);
+            
+            setTimeout(function() {
+                $progressBar.fadeOut(400);
+                $progressText.fadeOut(400);
+            }, 500);
+        };
 
 
         // ========== 加载更多（从尚未加载的朋友数据中取） ==========
