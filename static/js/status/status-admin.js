@@ -756,31 +756,39 @@ currentStatuses = data.statuses;
 
 async function updateGist(token) {
     try {
-        const data = {
-            statuses: currentStatuses
-        };
-        const updateRes = await fetch(
-            `https://api.github.com/gists/${getConfig().gistId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'Status-Manager'
-                },
-                body: JSON.stringify({
-                    files: {
-                        [getConfig().filename]: {
-                            content: JSON.stringify(data, null,
-                                2)
-                        }
+        const gistId = getConfig().gistId;
+        const filename = getConfig().filename;
+        
+        // 1. 先读取完整数据
+        const readRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'User-Agent': 'Status-Manager'
+            }
+        });
+        const gist = await readRes.json();
+        const fullData = JSON.parse(gist.files[filename].content);
+        
+        // 2. 只更新 statuses，保留其他字段
+        fullData.statuses = currentStatuses;
+        
+        // 3. 写回完整数据
+        const updateRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json',
+                'User-Agent': 'Status-Manager'
+            },
+            body: JSON.stringify({
+                files: {
+                    [filename]: {
+                        content: JSON.stringify(fullData, null, 2)
                     }
-                })
-            });
-        if (!updateRes.ok) {
-            console.error('Gist 更新失败:', updateRes.status);
-            return false;
-        }
-        return true;
+                }
+            })
+        });
+        return updateRes.ok;
     } catch (e) {
         console.error('updateGist 错误:', e);
         return false;
