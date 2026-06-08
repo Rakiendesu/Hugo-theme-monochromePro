@@ -219,7 +219,12 @@ function formatDate(dateString) {
 
 function formatDateForInput(dateString) {
     const date = new Date(dateString);
-    return date.toISOString().slice(0, 16);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 // ==================== 图床删除 ====================
@@ -1239,6 +1244,7 @@ async function publishStatus() {
         currentStatuses.unshift(newStatus);
         if (await updateGist(token)) {
             showToast('✅ 发布成功', 'success');
+            localStorage.setItem('last_location', document.getElementById('location').value);  // 地区不会被清理
             localStorage.removeItem('draft_content');
             document.getElementById('content').value = '';
             document.getElementById('images').value = '';
@@ -1478,7 +1484,11 @@ window.toggleSection = function(sectionId) {
             buildFilters();
         }, 300);
     };
-
+    // ✅ 恢复上次发布的地区
+    const savedLocation = localStorage.getItem('last_location');
+    if (savedLocation) {
+        document.getElementById('location').value = savedLocation;
+    }
     // ✅ 加载动态 - 延迟执行确保 DOM 完全加载
     setTimeout(() => {
         if (document.getElementById('githubToken')?.value) {
