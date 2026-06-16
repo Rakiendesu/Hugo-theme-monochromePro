@@ -1,7 +1,7 @@
 {{ $sortby := .Get "sortby" }}
 {{ $limit := int (.Get "limit") }}
 {{ $pages := .Site.RegularPages }}
-{{ $group_by_year := .Get "group_by_year" | default true }}  <!-- 新增年份分组参数 -->
+{{ $group_by_year := .Get "group_by_year" | default true }}
 
 {{- if $pages -}}
 {{- if eq $sortby "publishDate" -}}
@@ -17,10 +17,9 @@
 {{- end -}}
 
 {{ if $group_by_year }}
-    <!-- 按年份分组显示 -->
     {{ range $pages.GroupByPublishDate "2006" }}
         <div class="year-group">
-            <h2 class="year-title">{{ .Key }}年</h2>  <!-- 年份标题 -->
+            <h2 class="year-title">{{ .Key }}年</h2>
             <ul class="list-layout">
                 {{ range .Pages }}
                 <li>
@@ -28,11 +27,11 @@
                     <span>
                         •
                         {{ with .Params.categories }}
-                            {{ range . }}{{ . }}{{ end }}
+                            {{ range . }}<a href="{{ "categories" | relLangURL }}/{{ . | urlize }}" style="border-bottom: none !important;">{{ . }}</a>{{ end }}
                         {{ end }}
                         &nbsp;
                         {{ if eq $sortby "publishDate" }}
-                            {{ .PublishDate.Format "01/02" }}  <!-- 分组时只显示月/日 -->
+                            {{ .PublishDate.Format "01/02" }}
                         {{ else if eq $sortby "lastMod" }}
                             {{ .Lastmod.Format "01/02" }}
                         {{ end }}
@@ -43,7 +42,6 @@
         </div>
     {{ end }}
 {{ else }}
-    <!-- 普通列表显示 -->
     <ul class="list-layout">
         {{ range $pages }}
         <li>
@@ -51,11 +49,11 @@
             <span>
                 •
                 {{ with .Params.categories }}
-                    {{ range . }}{{ . }}{{ end }}
+                    {{ range . }}<a href="{{ "categories" | relLangURL }}/{{ . | urlize }}" style="border-bottom: none !important;">{{ . }}</a>{{ end }}
                 {{ end }}
                 •
                 {{ if eq $sortby "publishDate" }}
-                    {{ .PublishDate.Format "2006/01/02" }}  <!-- 非分组显示完整日期 -->
+                    {{ .PublishDate.Format "2006/01/02" }}
                 {{ else if eq $sortby "lastMod" }}
                     {{ .Lastmod.Format "2006/01/02" }}
                 {{ end }}

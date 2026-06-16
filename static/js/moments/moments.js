@@ -169,50 +169,50 @@ if (this.friendQueue.length > 0) {
             });
         };
 
-        MomentsManager.prototype.loadAllFriendsSite = async function() {
-            var self = this;
-            var total = this.friendQueue.length;
-            var loaded = 0;
-            
-            var $progressBar = $('#moments-progress');
-            var $progressFill = $('#moments-progress-fill');
-            var $progressText = $('#moments-progress-text');
-            
-            $progressBar.show();
-            $progressText.show();
-            
-            function updateProgress() {
-                loaded++;
-                var pct = Math.round((loaded / total) * 100);
-                $progressFill.css('width', pct + '%');
-                $progressText.text('加载好友信息 ' + loaded + '/' + total);
-            }
-            
-            var promises = this.friendQueue.map(function(friend, i) {
-                return fetch(friend.json_url + '?t=' + Date.now())
-                    .then(function(res) { return res.json(); })
-                    .then(function(friendData) {
-                        friend.name = (friendData.site && friendData.site.name) || ('朋友' + (i + 1));
-                        friend.avatar = (friendData.site && friendData.site.avatar) || '';
-                        friend.domain = (friendData.site && friendData.site.domain) || '';
-                        friend.siteLoaded = true;
-                        updateProgress();
-                    })
-                    .catch(function() {
-                        friend.name = '朋友' + (i + 1);
-                        friend.avatar = '';
-                        friend.domain = '';
-                        updateProgress();
-                    });
+MomentsManager.prototype.loadAllFriendsSite = async function() {
+    var self = this;
+    var total = this.friendQueue.length;
+    var loaded = 0;
+    
+    var $progressBar = $('#moments-progress');
+    var $progressFill = $('#moments-progress-fill');
+    var $progressText = $('#moments-progress-text');
+    
+    $progressBar.show();
+    $progressText.show();
+    
+    function updateProgress() {
+        loaded++;
+        var pct = Math.round((loaded / total) * 100);
+        $progressFill.css('width', pct + '%');
+        $progressText.text('加载好友信息 ' + loaded + '/' + total);
+    }
+    
+    var promises = this.friendQueue.map(function(friend, i) {
+        return fetch(friend.json_url + '?t=' + Date.now())
+            .then(function(res) { return res.json(); })
+            .then(function(friendData) {
+                friend.name = (friendData.site && friendData.site.name) || ('朋友' + (i + 1));
+                friend.avatar = (friendData.site && friendData.site.avatar) || '';
+                friend.domain = (friendData.site && friendData.site.domain) || '';
+                friend.siteLoaded = true;
+                updateProgress();
+            })
+            .catch(function() {
+                friend.name = '朋友' + (i + 1);
+                friend.avatar = '';
+                friend.domain = '';
+                updateProgress();
             });
-            
-            await Promise.all(promises);
-            
-            setTimeout(function() {
-                $progressBar.fadeOut(400);
-                $progressText.fadeOut(400);
-            }, 500);
-        };
+    });
+    
+    await Promise.all(promises);
+    
+    setTimeout(function() {
+        $progressBar.fadeOut(400);
+        $progressText.fadeOut(400);
+    }, 500);
+};
 
 
         // ========== 加载更多（从尚未加载的朋友数据中取） ==========
@@ -348,6 +348,14 @@ if (this.friendQueue.length > 0) {
                 if ($(this).prop('disabled')) return;
                 if (!self.initialLoadComplete) return;
                 if (!self.isLoading) self.render();
+            });
+
+            self.$grid.on('click', '.status-location-clickable', function(e) {
+                e.stopPropagation();
+                var locName = $(this).data('location');
+                if (locName && locName !== '未知' && locName !== 'all') {
+                    self.selectLocationFilter(locName);
+                }
             });
 
             $('#refreshBtn').on('click', function() {
@@ -672,13 +680,15 @@ $('#filter-location .select-trigger').text('地点');
             }
 
             // Meta 信息（根据 setting 控制）
+            // ========== 修改后的 metaHtml 生成逻辑 ==========
             var metaHtml = '<div class="status-meta">';
             if (isMine) {
-                metaHtml += (window.STATUS_STATUS_LOCATION ? '<span>📍 ' + (status.location || '未知') + '</span>' : '');
+                metaHtml += (window.STATUS_STATUS_LOCATION ? '<span class="status-location-clickable" data-location="' + (status.location ? status.location.split(' · ').pop().trim() : '') + '" style="cursor:pointer;">📍 ' + (status.location || '未知') + '</span>' : '');
                 metaHtml += (window.STATUS_STATUS_DATE ? '<span>📅 ' + (status.date ? this.formatDate(status.date) : '未知') + '</span>' : '');
                 metaHtml += (window.STATUS_STATUS_DEVICE ? '<span>' + deviceIcon + ' ' + (status.device || '未知') + '</span>' : '');
             } else {
-                metaHtml += (setting.location !== false ? '<span>📍 ' + (status.location || '未知') + '</span>' : '');
+                // 【修复】给朋友的卡片地址也加上 class、data-location 和 cursor:pointer
+                metaHtml += (setting.location !== false ? '<span class="status-location-clickable" data-location="' + (status.location ? status.location.split(' · ').pop().trim() : '') + '" style="cursor:pointer;">📍 ' + (status.location || '未知') + '</span>' : '');
                 metaHtml += '<span>📅 ' + (status.date ? this.formatDate(status.date) : '未知') + '</span>';
                 metaHtml += (setting.device !== false ? '<span>' + deviceIcon + ' ' + (status.device || '未知') + '</span>' : '');
             }

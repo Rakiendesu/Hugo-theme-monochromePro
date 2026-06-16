@@ -178,6 +178,14 @@
                 if (!self.isLoading) self.render();
             });
 
+self.$grid.on('click', '.status-location-clickable', function(e) {
+    e.stopPropagation();
+    var locName = $(this).data('location');
+    if (locName && locName !== '未知' && locName !== 'all') {
+        self.selectLocationFilter(locName);
+    }
+});
+            
             $('#refreshBtn').on('click', function() {
                 self.currentFilters = { year: 'all', month: 'all', location: 'all' };
                 $('#filter-year .select-trigger').text('年份');
@@ -400,7 +408,7 @@
                     ICONS.comment + '评论</button></div>'
                     : '') +
                 '<div class="status-meta">' +
-                (window.STATUS_STATUS_LOCATION ? '<span>📍 ' + (status.location || '未知') + '</span>' : '') +
+                (window.STATUS_STATUS_LOCATION ? '<span class="status-location-clickable" data-location="' + (status.location ? status.location.split(' · ').pop().trim() : '') + '" style="cursor:pointer;">📍 ' + (status.location || '未知') + '</span>' : '') +
                 (window.STATUS_STATUS_DATE ? '<span>📅 ' + (status.date ? this.formatDate(status.date) : '未知') + '</span>' : '') +
                 (window.STATUS_STATUS_DEVICE ? '<span>' + deviceIcon + ' ' + (status.device || '未知') + '</span>' : '') +
                 '</div></div></div>';
